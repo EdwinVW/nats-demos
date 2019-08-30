@@ -1,0 +1,122 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NATS.Client;
+
+namespace consumer
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var tasks = new List<Task>();
+            Task.Run(SubscribeInit);
+            Task.Run(SubscribePubSub);
+            Task.Run(SubscribeQueueGroups);
+            Task.Run(SubscribeRequestResponse);
+            Task.Run(() => SubscribeWildcards("nats.*.wildcards"));
+            Task.Run(() => SubscribeWildcards("nats.demo.wildcards.*"));
+            Task.Run(() => SubscribeWildcards("nats.demo.wildcards.>"));
+            Task.Run(() => SubscribeWildcards("nats.*.wildcards.>"));
+
+            Console.Clear();
+            System.Console.WriteLine("Consumers started");
+            Console.ReadKey(true);
+        }
+
+        private static void SubscribeInit()
+        {
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                {
+                    Console.Clear();
+                };
+
+                IAsyncSubscription s = c.SubscribeAsync("nats.demo.init", h);
+                s.Start();
+                
+                Wait();
+            }
+        }
+
+        private static void SubscribePubSub()
+        {
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                {
+                    string data = Encoding.UTF8.GetString(args.Message.Data);
+                    Console.WriteLine(data);
+                };
+
+                IAsyncSubscription s = c.SubscribeAsync("nats.demo.pubsub", h);
+                s.Start();
+                
+                Wait();
+            }
+        }
+
+        private static void SubscribeQueueGroups()
+        {
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                {
+                    string data = Encoding.UTF8.GetString(args.Message.Data);
+                    Console.WriteLine(data);
+                };
+
+                IAsyncSubscription s = c.SubscribeAsync("nats.demo.queuegroups", "load-balancing-queue", h);
+                s.Start();
+
+                Wait();
+            }
+        }
+
+        private static void SubscribeRequestResponse()
+        {
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                {
+                    string data = Encoding.UTF8.GetString(args.Message.Data);
+                    Console.WriteLine(data);
+                    c.Publish(args.Message.Reply, Encoding.UTF8.GetBytes($"ACK for {data}"));
+                };
+
+                IAsyncSubscription s = c.SubscribeAsync("nats.demo.requestresponse", "request-response-queue", h);
+                s.Start();
+
+                Wait();
+            }
+        }
+
+        private static void SubscribeWildcards(string subject)
+        {
+            using (IConnection c = new ConnectionFactory().CreateConnection())
+            {
+                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                {
+                    string data = Encoding.UTF8.GetString(args.Message.Data);
+                    Console.WriteLine($"{data} (received on subject {subject})");
+                };
+
+                IAsyncSubscription s = c.SubscribeAsync(subject, h);
+                s.Start();
+
+                Wait();
+            }
+        }
+
+        private static void Wait()
+        {
+            while(true)
+            {
+                Thread.Sleep(1000);
+            }
+        }
+    }
+}
