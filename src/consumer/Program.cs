@@ -19,7 +19,6 @@ namespace consumer
             Task.Run(() => SubscribeWildcards("nats.*.wildcards"));
             Task.Run(() => SubscribeWildcards("nats.demo.wildcards.*"));
             Task.Run(() => SubscribeWildcards("nats.demo.wildcards.>"));
-            Task.Run(() => SubscribeWildcards("nats.*.wildcards.>"));
 
             Console.Clear();
             System.Console.WriteLine("Consumers started");
@@ -46,16 +45,13 @@ namespace consumer
         {
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
-                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                ISyncSubscription sub = c.SubscribeSync("nats.demo.pubsub");
+                while (true)
                 {
-                    string data = Encoding.UTF8.GetString(args.Message.Data);
-                    Console.WriteLine(data);
-                };
-
-                IAsyncSubscription s = c.SubscribeAsync("nats.demo.pubsub", h);
-                s.Start();
-                
-                Wait();
+                    var message = sub.NextMessage();
+                    string data = Encoding.UTF8.GetString(message.Data);
+                    Console.WriteLine(message);
+                }
             }
         }
 
@@ -84,7 +80,9 @@ namespace consumer
                 {
                     string data = Encoding.UTF8.GetString(args.Message.Data);
                     Console.WriteLine(data);
-                    c.Publish(args.Message.Reply, Encoding.UTF8.GetBytes($"ACK for {data}"));
+
+                    byte[] responseData = Encoding.UTF8.GetBytes($"ACK for {data}");
+                    c.Publish(args.Message.Reply, responseData);
                 };
 
                 IAsyncSubscription s = c.SubscribeAsync("nats.demo.requestresponse", "request-response-queue", h);

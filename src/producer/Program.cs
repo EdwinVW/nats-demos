@@ -9,11 +9,12 @@ namespace producer
     {
         private const int MESSAGE_COUNT = 25;
         private const int SEND_INTERVAL = 500;
+        private const string ALLOWED_OPTIONS = "0123456789qQ";
 
         static void Main(string[] args)
         {
             bool exit = false;
-            string allowedOptions = "0123456789qQ";
+            
             while (!exit)
             {
                 Console.Clear();
@@ -33,7 +34,7 @@ namespace producer
                 do
                 {
                     input = Console.ReadKey(true);
-                } while (!allowedOptions.Contains(input.KeyChar));
+                } while (!ALLOWED_OPTIONS.Contains(input.KeyChar));
 
                 Console.Clear();
                 InitializeSubscribers();
@@ -85,10 +86,12 @@ namespace producer
             {
                 for (int i = 1; i <= MESSAGE_COUNT; i++)
                 {
-                    string msg = $"Message {i}";
-                    Console.WriteLine($"Sending: {msg}");
+                    string message = $"Message {i}";
 
-                    c.Publish("nats.demo.pubsub", Encoding.UTF8.GetBytes(msg));
+                    Console.WriteLine($"Sending: {message}");
+
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    c.Publish("nats.demo.pubsub", data);
                     
                     Thread.Sleep(SEND_INTERVAL);
                 }
@@ -105,10 +108,12 @@ namespace producer
             {
                 for (int i = 1; i <= MESSAGE_COUNT; i++)
                 {
-                    string msg = $"Message {i}";
-                    Console.WriteLine($"Sending: {msg}");
+                    string message = $"Message {i}";
 
-                    c.Publish("nats.demo.queuegroups", Encoding.UTF8.GetBytes(msg));
+                    Console.WriteLine($"Sending: {message}");
+
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    c.Publish("nats.demo.queuegroups", data);
                     
                     Thread.Sleep(SEND_INTERVAL);
                 }
@@ -127,13 +132,16 @@ namespace producer
 
                 for (int i = 1; i <= MESSAGE_COUNT; i++)
                 {
-                    string msg = $"Message {i}";
-                    Console.WriteLine($"Sending: {msg}");
+                    string message = $"Message {i}";
 
-                    c.Publish("nats.demo.requestresponse", replySubject, Encoding.UTF8.GetBytes(msg));
+                    Console.WriteLine($"Sending: {message}");
 
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    c.Publish("nats.demo.requestresponse", replySubject, data);
                     var response = subscription.NextMessage(1000);
-                    Console.WriteLine($"Response: {Encoding.UTF8.GetString(response.Data)})");
+
+                    string responseMsg = Encoding.UTF8.GetString(response.Data);
+                    Console.WriteLine($"Response: {responseMsg}");
                     
                     Thread.Sleep(SEND_INTERVAL);
                 }
@@ -150,11 +158,15 @@ namespace producer
             {
                 for (int i = 1; i <= MESSAGE_COUNT; i++)
                 {
-                    string msg = $"Message {i}";
-                    Console.WriteLine($"Sending: {msg}");
+                    string message = $"Message {i}";
+
+                    Console.WriteLine($"Sending: {message}");
                     
-                    var response = c.Request("nats.demo.requestresponse", Encoding.UTF8.GetBytes(msg));
-                    Console.WriteLine($"Response: {Encoding.UTF8.GetString(response.Data)}");
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    var response = c.Request("nats.demo.requestresponse", data);
+                    var responseMsg = Encoding.UTF8.GetString(response.Data);
+
+                    Console.WriteLine($"Response: {responseMsg}");
                     
                     Thread.Sleep(SEND_INTERVAL);
                 }
@@ -171,7 +183,6 @@ namespace producer
             Console.WriteLine("- nats.*.wildcards");
             Console.WriteLine("- nats.demo.wildcards.*");
             Console.WriteLine("- nats.demo.wildcards.>");
-            Console.WriteLine("- nats.*.wildcards.>");
 
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
@@ -184,10 +195,12 @@ namespace producer
                         return;
                     }
 
-                    string msg = DateTime.Now.ToString("hh:mm:ss");
+                    string message = DateTime.Now.ToString("hh:mm:ss");
 
-                    Console.WriteLine($"Sending: {msg} --> {subject}");
-                    c.Publish(subject, Encoding.UTF8.GetBytes(msg));
+                    Console.WriteLine($"Sending: {message} to {subject}");
+                    
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    c.Publish(subject, data);
 
                     c.Flush();
                 }
