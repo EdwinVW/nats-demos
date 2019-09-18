@@ -11,14 +11,16 @@ namespace consumer
             string clientId = args[0];
 
             var cf = new StanConnectionFactory();
-            using (var c = cf.CreateConnection("test-cluster", clientId))
+            StanOptions options = StanOptions.GetDefaultOptions();
+            options.NatsURL = "nats://localhost:4223";
+            using (var c = cf.CreateConnection("test-cluster", clientId, options))
             {
                 var opts = StanSubscriptionOptions.GetDefaultOptions();
 
                 //opts.DeliverAllAvailable();
                 //opts.StartAt(15);
                 //opts.StartAt(TimeSpan.FromSeconds(10));
-                //opts.StartAt(new DateTime(2019, 9, 3, 9, 22, 0));
+                //opts.StartAt(new DateTime(2019, 9, 18, 9, 0, 0));
                 //opts.StartWithLastReceived();
                 //opts.DurableName = "durable";
 

@@ -10,7 +10,9 @@ namespace producer
         {
             string clientId = $"producer-{Guid.NewGuid().ToString()}";
             var cf = new StanConnectionFactory();
-            using (var c = cf.CreateConnection("test-cluster", clientId))
+            StanOptions options = StanOptions.GetDefaultOptions();
+            options.NatsURL = "nats://localhost:4223";
+            using (var c = cf.CreateConnection("test-cluster", clientId, options))
             {
                 for (int i = 1; i <= 25; i++)
                 {
