@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Store.Messaging;
 
-namespace HighVolumeApp
+namespace MultiUserSimulator
 {
     public class UserSimulation
     {
@@ -13,11 +13,11 @@ namespace HighVolumeApp
         private readonly Random _random;
         private static NATSMessageBroker _messageBroker;
 
-        public UserSimulation(int simulationId)
+        public UserSimulation(int simulationId, NATSMessageBroker messageBroker)
         {
             _simulationId = simulationId;
             _random = new Random(DateTime.Now.Millisecond);
-            _messageBroker = new NATSMessageBroker("nats://localhost:4222");
+            _messageBroker = messageBroker;
         }
 
         public Task Start(CancellationToken cancellationToken)
@@ -29,16 +29,24 @@ namespace HighVolumeApp
         {
             while (!cancellationToken.IsCancellationRequested)
             {
+                WaitRandom();
+
                 string orderNumber = $"{_simulationId}{_random.Next(1000, 9999)}";
                 CreateOrder(orderNumber);
+                WaitRandom();
+
                 for (int i = 0; i < _random.Next(3, 15); i++)
                 {
                     OrderProducts(orderNumber);
+                    WaitRandom();
                 }
+
                 for (int i = 0; i < _random.Next(0, 2); i++)
                 {
                     RemoveProducts(orderNumber);
+                    WaitRandom();
                 }
+
                 FinalizeOrder(orderNumber);
             }
         }
@@ -100,6 +108,11 @@ namespace HighVolumeApp
                 string message = $"{orderNumber}";
                 _messageBroker.Publish("store.commands", messageType, message);
             }
+        }
+
+        private void WaitRandom()
+        {
+            Thread.Sleep(_random.Next(100, 10000));
         }
     }
 }

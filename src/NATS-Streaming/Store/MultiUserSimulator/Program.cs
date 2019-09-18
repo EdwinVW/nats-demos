@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Store.Messaging;
 
-namespace HighVolumeApp
+namespace MultiUserSimulator
 {
     class Program
     {
@@ -30,10 +31,11 @@ namespace HighVolumeApp
 
         private static Task[] StartSimulation(int numOfSimulationThreads, CancellationToken cancellationToken)
         {
+            var messageBroker = new NATSMessageBroker("nats://localhost:4222");
             List<Task> taskList = new List<Task>();
             for (int i = 0; i < numOfSimulationThreads; i++)
             {
-                UserSimulation userSimulation = new UserSimulation(i);
+                UserSimulation userSimulation = new UserSimulation(i, messageBroker);
                 taskList.Add(userSimulation.Start(cancellationToken));
             }
             return taskList.ToArray();
