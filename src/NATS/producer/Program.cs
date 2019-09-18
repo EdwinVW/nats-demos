@@ -7,12 +7,18 @@ namespace producer
 {
     class Program
     {
-        private const int MESSAGE_COUNT = 25;
-        private const int SEND_INTERVAL = 500;
+        private static int _messageCount = 25;
+        private static int _sendIntervalMs = 500;
         private const string ALLOWED_OPTIONS = "0123456789qQ";
 
         static void Main(string[] args)
         {
+            if (args.Length == 2)
+            {
+                _messageCount = Convert.ToInt32(args[0]);
+                _sendIntervalMs = Convert.ToInt32(args[1]);
+            }
+
             bool exit = false;
             
             while (!exit)
@@ -84,7 +90,7 @@ namespace producer
 
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
-                for (int i = 1; i <= MESSAGE_COUNT; i++)
+                for (int i = 1; i <= _messageCount; i++)
                 {
                     string message = $"Message {i}";
 
@@ -93,7 +99,7 @@ namespace producer
                     byte[] data = Encoding.UTF8.GetBytes(message);
                     c.Publish("nats.demo.pubsub", data);
                     
-                    Thread.Sleep(SEND_INTERVAL);
+                    Thread.Sleep(_sendIntervalMs);
                 }
                 c.Flush();
             }
@@ -106,7 +112,7 @@ namespace producer
 
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
-                for (int i = 1; i <= MESSAGE_COUNT; i++)
+                for (int i = 1; i <= _messageCount; i++)
                 {
                     string message = $"Message {i}";
 
@@ -115,7 +121,7 @@ namespace producer
                     byte[] data = Encoding.UTF8.GetBytes(message);
                     c.Publish("nats.demo.queuegroups", data);
                     
-                    Thread.Sleep(SEND_INTERVAL);
+                    Thread.Sleep(_sendIntervalMs);
                 }
             }
         }
@@ -130,7 +136,7 @@ namespace producer
                 string replySubject = Guid.NewGuid().ToString();
                 ISyncSubscription subscription = c.SubscribeSync(replySubject);
 
-                for (int i = 1; i <= MESSAGE_COUNT; i++)
+                for (int i = 1; i <= _messageCount; i++)
                 {
                     string message = $"Message {i}";
 
@@ -143,7 +149,7 @@ namespace producer
                     string responseMsg = Encoding.UTF8.GetString(response.Data);
                     Console.WriteLine($"Response: {responseMsg}");
                     
-                    Thread.Sleep(SEND_INTERVAL);
+                    Thread.Sleep(_sendIntervalMs);
                 }
                 c.Flush();
             }
@@ -156,7 +162,7 @@ namespace producer
 
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
-                for (int i = 1; i <= MESSAGE_COUNT; i++)
+                for (int i = 1; i <= _messageCount; i++)
                 {
                     string message = $"Message {i}";
 
@@ -168,7 +174,7 @@ namespace producer
 
                     Console.WriteLine($"Response: {responseMsg}");
                     
-                    Thread.Sleep(SEND_INTERVAL);
+                    Thread.Sleep(_sendIntervalMs);
                 }
                 c.Flush();
             }

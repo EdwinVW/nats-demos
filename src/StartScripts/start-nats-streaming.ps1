@@ -1,1 +1,1 @@
-docker run --name nats-streaming -p 4223:4223 -p 8223:8223 nats-streaming -p 4223 -m 8223
+Start-Process -FilePath "d:\tools\nats-streaming\nats-streaming-server.exe" -ArgumentList "-p 4223"
