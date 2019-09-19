@@ -13,9 +13,9 @@ namespace Store.Messaging
         private bool _disposed = false;
         private string _url;
         private CancellationTokenSource _cts;
-        private List<Task> _consumerTasks;        
+        private List<Task> _consumerTasks;
         private IStanConnection _connection;
-        
+
         public STANMessageBroker(string url, string clientId)
         {
             _url = url;
@@ -23,8 +23,8 @@ namespace Store.Messaging
             _consumerTasks = new List<Task>();
             var cf = new StanConnectionFactory();
             var options = StanOptions.GetDefaultOptions();
-            options.NatsURL = _url;            
-            _connection = cf.CreateConnection("test-cluster", clientId, options);                
+            options.NatsURL = _url;
+            _connection = cf.CreateConnection("test-cluster", clientId, options);
         }
 
         public void Publish(string subject, string messageType, string messageData)
@@ -40,14 +40,14 @@ namespace Store.Messaging
             }
         }
 
-        public void StartMessageConsumer(string subject, MessageAvailableCallback callback, bool replay = false)
+        public void StartMessageConsumer(string subject, STANMessageAvailableCallback callback, bool replay = false, ulong? startAtSeqNr = null)
         {
-            _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback, replay)));
+            _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback, null, replay, startAtSeqNr)));
         }
 
-        public void StartDurableMessageConsumer(string subject, MessageAvailableCallback callback, string durableName)
+        public void StartDurableMessageConsumer(string subject, STANMessageAvailableCallback callback, string durableName)
         {
-            _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback, false, durableName)));
+            _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback, durableName, false, null)));
         }
 
         public void StopMessageConsumers()
@@ -59,7 +59,7 @@ namespace Store.Messaging
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);             
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -69,15 +69,16 @@ namespace Store.Messaging
                 return;
             }
 
-            if (disposing) 
+            if (disposing)
             {
                 _connection.Close();
             }
-            
+
             _disposed = true;
         }
 
-        private void ConsumerWorker(string subject, MessageAvailableCallback callback, bool replay = false, string durableName = null)
+        private void ConsumerWorker(string subject, STANMessageAvailableCallback callback,
+            string durableName = null, bool replay = false, ulong? startAtSeqNr = null)
         {
             try
             {
@@ -85,15 +86,24 @@ namespace Store.Messaging
                 subOptions.DurableName = durableName;
                 if (replay)
                 {
-                    subOptions.DeliverAllAvailable();
+                    if (startAtSeqNr.HasValue)
+                    {
+                        subOptions.StartAt(startAtSeqNr.Value);
+                    }
+                    else
+                    {
+                        subOptions.DeliverAllAvailable();
+                    }
                 }
+
                 _connection.Subscribe(subject, subOptions, (obj, args) =>
                 {
                     string message = System.Text.Encoding.UTF8.GetString(args.Message.Data);
                     string[] messageParts = message.Split('#');
                     string eventType = messageParts[0];
                     string eventData = message.Substring(message.IndexOf('#') + 1);
-                    callback.Invoke(eventType, eventData);
+                    ulong sequenceNumber = args.Message.Sequence;
+                    callback.Invoke(eventType, eventData, sequenceNumber);
                 });
 
                 _cts.Token.WaitHandle.WaitOne();

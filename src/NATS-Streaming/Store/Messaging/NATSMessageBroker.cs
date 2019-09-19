@@ -59,7 +59,7 @@ namespace Store.Messaging
             return Encoding.UTF8.GetString(response.Data);
         }
 
-        public void StartMessageConsumer(string subject, RequestAvailableCallback callback)
+        public void StartMessageConsumer(string subject, NATSRequestAvailableCallback callback)
         {
             _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback)));
         }
@@ -70,7 +70,7 @@ namespace Store.Messaging
             Task.WaitAll(_consumerTasks.ToArray(), 5000);
         }
 
-        private void ConsumerWorker(string subject, RequestAvailableCallback callback)
+        private void ConsumerWorker(string subject, NATSRequestAvailableCallback callback)
         {
             _connection.SubscribeAsync(subject, (obj, args) =>
             {

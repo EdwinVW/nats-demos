@@ -1,44 +1,58 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Store.Messaging;
 using Store.Messaging.Events;
-using System.Linq;
-using System.Text;
 
-namespace Store.QueryService
+namespace Store.ShippingService
 {
     class Program
     {
         private static STANMessageBroker _eventsMessageBroker;
-        private static NATSMessageBroker _queriesMessageBroker;
-
+        
         static void Main(string[] args)
         {
-            _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrdersQueryService");
-            _eventsMessageBroker.StartDurableMessageConsumer("store.events", EventReceived, "OrdersQueryService");
-
-            _queriesMessageBroker = new NATSMessageBroker("nats://localhost:4222");
-            _queriesMessageBroker.StartMessageConsumer("store.queries.*", QueryReceived);
-
             Console.Clear();
-            Console.WriteLine("OrdersQueryService inline.");
+
+            _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "ShippingService");
+            ulong? lastSeqNr = GetLastSequenceNumber();
+            if (lastSeqNr != null)
+            {
+                lastSeqNr++;
+                Console.WriteLine($"Replaying from seq# {lastSeqNr}");
+            }
+            else
+            {
+                Console.WriteLine("Replaying all messages.");
+            }
+            _eventsMessageBroker.StartMessageConsumer("store.events", EventReceived, true, lastSeqNr);
+
+            Console.WriteLine("ShippingService online.");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey(true);
 
             _eventsMessageBroker.StopMessageConsumers();
             _eventsMessageBroker.Dispose();
-            _queriesMessageBroker.StopMessageConsumers();
-            _queriesMessageBroker.Dispose();
         }
 
         private static void EventReceived(string messageType, string messageData, ulong sequenceNumber)
         {
             try
             {
+                ulong? lastSeqNr = GetLastSequenceNumber();
+                if (lastSeqNr.HasValue)
+                {
+                    if (sequenceNumber <= lastSeqNr)
+                    {
+                        return;
+                    }
+                }
+
                 Type eventType = Type.GetType(messageType);
                 dynamic e = JsonSerializer.Deserialize(messageData, eventType);
                 Handle(e);
+                UpdateLastSequenceNumber(sequenceNumber);
             }
             catch (Exception ex)
             {
@@ -52,7 +66,7 @@ namespace Store.QueryService
 
         private static MethodInfo DetermineHandlerMethod(string messageType)
         {
-            return typeof(Store.QueryService.Program)
+            return typeof(Store.ShippingService.Program)
                 .GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
         }
 
@@ -62,7 +76,7 @@ namespace Store.QueryService
 
             using (var dbContext = new StoreDBContext())
             {
-                dbContext.Orders.Add(new Order { OrderNumber = e.OrderNumber, Status = "In progress" });
+                dbContext.Orders.Add(new Order { OrderNumber = e.OrderNumber, Shipped = false });
                 await dbContext.SaveChangesAsync();
             }
         }
@@ -79,10 +93,8 @@ namespace Store.QueryService
                     order.Products.Add(new OrderedProduct
                     {
                         Id = Guid.NewGuid().ToString(),
-                        ProductNumber = e.ProductNumber,
-                        Price = e.Price
+                        ProductNumber = e.ProductNumber
                     });
-                    order.TotalPrice += e.Price;
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -102,7 +114,6 @@ namespace Store.QueryService
                     if (product != null)
                     {
                         order.Products.Remove(product);
-                        order.TotalPrice -= product.Price;
                         await dbContext.SaveChangesAsync();
                     }
                 }
@@ -119,7 +130,6 @@ namespace Store.QueryService
                 if (order != null)
                 {
                     order.ShippingAddress = e.ShippingAddress;
-                    order.Status = "Completed";
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -134,7 +144,10 @@ namespace Store.QueryService
                 var order = dbContext.Orders.FirstOrDefault(o => o.OrderNumber == e.OrderNumber);
                 if (order != null)
                 {
-                    order.Status = "Shipped";
+                    // here shipping should be handled
+                    // e.g. a shipping manifest for the shipping provider is printed
+
+                    order.Shipped = true;
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -155,35 +168,34 @@ namespace Store.QueryService
             }
         }
 
-        private static string QueryReceived(string messageType, string messageData)
+        private static ulong? GetLastSequenceNumber()
         {
-            Console.WriteLine("Query received.");
-
-            // messageType is ignored for now - only 1 query supported
-
-            try
+            using (var dbContext = new StoreDBContext())
             {
-                using (var dbContext = new StoreDBContext())
+                var info = dbContext.ShippingInfo.FirstOrDefault();
+                if (info == null)
                 {
-                    StringBuilder ordersList = new StringBuilder($"Order#\t| Status\t| Total amount\n");
-                    ordersList.AppendLine($"--------|---------------|----------------");
-                    foreach (Order order in dbContext.Orders)
-                    {
-                        ordersList.AppendLine($"{order.OrderNumber}\t| {order.Status}\t| {order.TotalPrice}");
-                    }
-                    return ordersList.ToString();
+                    return null;
                 }
+                return info.LastSeqNr;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Error: {ex.InnerException.Message}");
-                }
-            }
+        } 
 
-            return "Error";
-        }
+        private static async void UpdateLastSequenceNumber(ulong sequenceNumber)
+        {
+            using (var dbContext = new StoreDBContext())
+            {
+                var info = dbContext.ShippingInfo.FirstOrDefault();
+                if (info == null)
+                {
+                    dbContext.ShippingInfo.Add(new ShippingInfo { Id = 0, LastSeqNr = sequenceNumber });
+                }
+                else
+                {
+                    info.LastSeqNr = sequenceNumber;
+                }
+                await dbContext.SaveChangesAsync();
+            }
+        }        
     }
 }

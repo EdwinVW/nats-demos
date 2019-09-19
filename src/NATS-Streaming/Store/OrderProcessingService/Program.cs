@@ -26,7 +26,7 @@ namespace Store.OrderProcessingService
             _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrderprocessingService");
 
             Console.Clear();
-            Console.WriteLine("Writemodel consumer ready.");
+            Console.WriteLine("OrderProcessingService online.");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey(true);
 
@@ -64,7 +64,8 @@ namespace Store.OrderProcessingService
 
         private static MethodInfo DetermineHandlerMethod(string messageType)
         {
-            return typeof(Store.OrderProcessingService.Program).GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
+            return typeof(Store.OrderProcessingService.Program)
+                .GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
         }
 
         private static string CreateOrder(string messageData)
