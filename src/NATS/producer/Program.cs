@@ -142,10 +142,12 @@ namespace producer
 
                     Console.WriteLine($"Sending: {message}");
 
+                    // send with reply subject
                     byte[] data = Encoding.UTF8.GetBytes(message);
                     c.Publish("nats.demo.requestresponse", replySubject, data);
-                    var response = subscription.NextMessage(1000);
 
+                    // wait for response in reply subject
+                    var response = subscription.NextMessage(1000);
                     string responseMsg = Encoding.UTF8.GetString(response.Data);
                     Console.WriteLine($"Response: {responseMsg}");
                     

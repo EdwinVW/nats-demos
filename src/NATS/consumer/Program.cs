@@ -9,6 +9,8 @@ namespace consumer
 {
     class Program
     {
+        private static bool _exit = false;
+
         static void Main(string[] args)
         {
             var tasks = new List<Task>();
@@ -23,6 +25,7 @@ namespace consumer
             Console.Clear();
             System.Console.WriteLine("Consumers started");
             Console.ReadKey(true);
+            _exit = true;
         }
 
         private static void SubscribeInit()
@@ -46,7 +49,7 @@ namespace consumer
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
                 ISyncSubscription sub = c.SubscribeSync("nats.demo.pubsub");
-                while (true)
+                while (!_exit)
                 {
                     var message = sub.NextMessage();
                     string data = Encoding.UTF8.GetString(message.Data);
@@ -104,14 +107,12 @@ namespace consumer
 
                 IAsyncSubscription s = c.SubscribeAsync(subject, h);
                 s.Start();
-
-                Wait();
             }
         }
 
         private static void Wait()
         {
-            while(true)
+            while(!_exit)
             {
                 Thread.Sleep(1000);
             }
