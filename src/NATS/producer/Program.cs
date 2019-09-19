@@ -147,7 +147,7 @@ namespace producer
                     c.Publish("nats.demo.requestresponse", replySubject, data);
 
                     // wait for response in reply subject
-                    var response = subscription.NextMessage(1000);
+                    var response = subscription.NextMessage(5000);
                     string responseMsg = Encoding.UTF8.GetString(response.Data);
                     Console.WriteLine($"Response: {responseMsg}");
                     
@@ -171,7 +171,7 @@ namespace producer
                     Console.WriteLine($"Sending: {message}");
                     
                     byte[] data = Encoding.UTF8.GetBytes(message);
-                    var response = c.Request("nats.demo.requestresponse", data);
+                    var response = c.Request("nats.demo.requestresponse", data, 5000);
                     var responseMsg = Encoding.UTF8.GetString(response.Data);
 
                     Console.WriteLine($"Response: {responseMsg}");
