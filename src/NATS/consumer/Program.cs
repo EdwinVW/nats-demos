@@ -49,9 +49,11 @@ namespace consumer
             using (IConnection c = new ConnectionFactory().CreateConnection())
             {
                 ISyncSubscription sub = c.SubscribeSync("nats.demo.pubsub");
+
                 while (!_exit)
                 {
                     var message = sub.NextMessage();
+                    
                     string data = Encoding.UTF8.GetString(message.Data);
                     Console.WriteLine(message);
                 }

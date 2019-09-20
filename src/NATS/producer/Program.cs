@@ -97,11 +97,11 @@ namespace producer
                     Console.WriteLine($"Sending: {message}");
 
                     byte[] data = Encoding.UTF8.GetBytes(message);
+
                     c.Publish("nats.demo.pubsub", data);
                     
                     Thread.Sleep(_sendIntervalMs);
                 }
-                c.Flush();
             }
         }
 
@@ -119,6 +119,7 @@ namespace producer
                     Console.WriteLine($"Sending: {message}");
 
                     byte[] data = Encoding.UTF8.GetBytes(message);
+
                     c.Publish("nats.demo.queuegroups", data);
                     
                     Thread.Sleep(_sendIntervalMs);
@@ -144,16 +145,17 @@ namespace producer
 
                     // send with reply subject
                     byte[] data = Encoding.UTF8.GetBytes(message);
+
                     c.Publish("nats.demo.requestresponse", replySubject, data);
 
                     // wait for response in reply subject
                     var response = subscription.NextMessage(5000);
+
                     string responseMsg = Encoding.UTF8.GetString(response.Data);
                     Console.WriteLine($"Response: {responseMsg}");
                     
                     Thread.Sleep(_sendIntervalMs);
                 }
-                c.Flush();
             }
         }
 
@@ -171,14 +173,15 @@ namespace producer
                     Console.WriteLine($"Sending: {message}");
                     
                     byte[] data = Encoding.UTF8.GetBytes(message);
+
                     var response = c.Request("nats.demo.requestresponse", data, 5000);
+
                     var responseMsg = Encoding.UTF8.GetString(response.Data);
 
                     Console.WriteLine($"Response: {responseMsg}");
                     
                     Thread.Sleep(_sendIntervalMs);
                 }
-                c.Flush();
             }
         }
 
@@ -208,9 +211,8 @@ namespace producer
                     Console.WriteLine($"Sending: {message} to {subject}");
                     
                     byte[] data = Encoding.UTF8.GetBytes(message);
+                    
                     c.Publish(subject, data);
-
-                    c.Flush();
                 }
             }
         }        
