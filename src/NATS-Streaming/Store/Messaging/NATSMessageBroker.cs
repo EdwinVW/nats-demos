@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,7 +76,7 @@ namespace Store.Messaging
             _connection.SubscribeAsync(subject, (obj, args) =>
             {
                 string message = System.Text.Encoding.UTF8.GetString(args.Message.Data);
-                string eventType = args.Message.Subject.Substring(args.Message.Subject.LastIndexOf('.') + 1);
+                string eventType = args.Message.Subject.Split('.').Last();
                 string response = callback.Invoke(eventType, message);
                 if (response != null && args.Message.Reply != null)
                 {

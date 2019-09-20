@@ -2,7 +2,7 @@
 using System.Text;
 using STAN.Client;
 
-namespace consumer
+namespace BasicMessaging.Consumer
 {
     class Program
     {
@@ -11,8 +11,10 @@ namespace consumer
             string clientId = args[0];
 
             var cf = new StanConnectionFactory();
+
             StanOptions options = StanOptions.GetDefaultOptions();
             options.NatsURL = "nats://localhost:4223";
+            
             using (var c = cf.CreateConnection("test-cluster", clientId, options))
             {
                 var opts = StanSubscriptionOptions.GetDefaultOptions();
