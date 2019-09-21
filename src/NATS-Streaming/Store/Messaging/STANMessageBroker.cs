@@ -101,7 +101,7 @@ namespace Store.Messaging
                     string message = System.Text.Encoding.UTF8.GetString(args.Message.Data);
                     string[] messageParts = message.Split('#');
                     string eventType = messageParts[0];
-                    string eventData = messageParts[1];
+                    string eventData = message.Substring(message.IndexOf('#') + 1);
                     ulong sequenceNumber = args.Message.Sequence;
                     callback.Invoke(eventType, eventData, sequenceNumber);
                 });

@@ -48,7 +48,7 @@ namespace Store.OrderProcessingService.Domain
                 return CommandHandlingResult.Fail("Error: products can only be added to in progress orders.");
             }
 
-            var e = new ProductOrdered(this.OrderNumber, productNumber, DetermineProductPrice(productNumber));
+            var e = new ProductOrdered(this.OrderNumber, productNumber, GetProductPrice(productNumber));
             Handle(e);
 
             return CommandHandlingResult.Success(e);
@@ -148,7 +148,7 @@ namespace Store.OrderProcessingService.Domain
             this.Status = OrderStatus.Cancelled;
         }                                       
 
-        private decimal DetermineProductPrice(string productNumber)
+        private decimal GetProductPrice(string productNumber)
         {
             switch (productNumber)
             {
