@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Store.Messaging;
-using Store.Messaging.Events;
+using Store.ShippingService.Events;
 
 namespace Store.ShippingService
 {
@@ -49,7 +49,8 @@ namespace Store.ShippingService
                     }
                 }
 
-                Type eventType = Type.GetType(messageType);
+                string eventTypeName = $"Store.ShippingService.Events.{messageType}";
+                Type eventType = Type.GetType(eventTypeName);
                 dynamic e = JsonSerializer.Deserialize(messageData, eventType);
                 Handle(e);
                 UpdateLastSequenceNumber(sequenceNumber);

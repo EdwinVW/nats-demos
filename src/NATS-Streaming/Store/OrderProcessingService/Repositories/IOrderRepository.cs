@@ -1,4 +1,4 @@
-using Store.Messaging.Events;
+using Store.OrderProcessingService.Domain.Events;
 using Store.OrderProcessingService.Domain;
 
 namespace Store.OrderProcessingService.Repositories

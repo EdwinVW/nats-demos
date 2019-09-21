@@ -1,5 +1,5 @@
 
-using Store.Messaging.Events;
+using Store.OrderProcessingService.Domain.Events;
 
 namespace Store.OrderProcessingService.Domain
 {

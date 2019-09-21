@@ -2,11 +2,11 @@
 using System.Reflection;
 using System.Text.Json;
 using Store.Messaging;
-using Store.Messaging.Events;
 using System.Linq;
 using System.Text;
+using Store.OrdersQueryService.Events;
 
-namespace Store.QueryService
+namespace Store.OrdersQueryService
 {
     class Program
     {
@@ -22,7 +22,7 @@ namespace Store.QueryService
             _queriesMessageBroker.StartMessageConsumer("store.queries.*", QueryReceived);
 
             Console.Clear();
-            Console.WriteLine("OrdersQueryService inline.");
+            Console.WriteLine("OrdersQueryService online.");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey(true);
 
@@ -36,7 +36,8 @@ namespace Store.QueryService
         {
             try
             {
-                Type eventType = Type.GetType(messageType);
+                string eventTypeName = $"Store.OrdersQueryService.Events.{messageType}";
+                Type eventType = Type.GetType(eventTypeName, true);
                 dynamic e = JsonSerializer.Deserialize(messageData, eventType);
                 Handle(e);
             }
@@ -48,12 +49,6 @@ namespace Store.QueryService
                     Console.WriteLine($"Error: {ex.InnerException.Message}");
                 }
             }
-        }
-
-        private static MethodInfo DetermineHandlerMethod(string messageType)
-        {
-            return typeof(Store.QueryService.Program)
-                .GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
         }
 
         private static async void Handle(OrderCreated e)

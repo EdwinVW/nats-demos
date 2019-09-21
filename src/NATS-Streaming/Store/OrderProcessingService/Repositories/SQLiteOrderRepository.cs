@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using Store.Messaging.Events;
+using Store.OrderProcessingService.Domain.Events;
 using Store.OrderProcessingService.Domain;
 
 namespace Store.OrderProcessingService.Repositories

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Store.QueryService
+namespace Store.OrdersQueryService
 {
     public class Order
     {

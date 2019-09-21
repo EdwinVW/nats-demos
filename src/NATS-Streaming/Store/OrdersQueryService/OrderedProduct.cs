@@ -1,4 +1,4 @@
-namespace Store.QueryService
+namespace Store.OrdersQueryService
 {
     public class OrderedProduct
     {

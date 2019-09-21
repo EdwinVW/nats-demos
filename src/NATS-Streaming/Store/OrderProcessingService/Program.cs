@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Store.Messaging;
-using Store.Messaging.Events;
 using Store.OrderProcessingService.Domain;
+using Store.OrderProcessingService.Domain.Events;
 using Store.OrderProcessingService.Repositories;
 
 namespace Store.OrderProcessingService
@@ -268,7 +268,7 @@ namespace Store.OrderProcessingService
 
         private static void PublishBusinessEvent(BusinessEvent e)
         {
-            string eventType = e.GetType().AssemblyQualifiedName;
+            string eventType = e.GetType().Name;
             string eventData = JsonSerializer.Serialize(e, e.GetType());
             _eventsMessageBroker.Publish("store.events", eventType, eventData);
         }

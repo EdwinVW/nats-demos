@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Store.Messaging.Events;
+using Store.OrderProcessingService.Domain.Events;
 
 namespace Store.OrderProcessingService.Domain
 {

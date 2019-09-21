@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Store.QueryService;
+using Store.OrdersQueryService;
 
 namespace OrdersQueryService.Migrations
 {
@@ -15,7 +15,7 @@ namespace OrdersQueryService.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
 
-            modelBuilder.Entity("Store.QueryService.Order", b =>
+            modelBuilder.Entity("Store.OrdersQueryService.Order", b =>
                 {
                     b.Property<string>("OrderNumber")
                         .ValueGeneratedOnAdd();
@@ -31,7 +31,7 @@ namespace OrdersQueryService.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("Store.QueryService.OrderedProduct", b =>
+            modelBuilder.Entity("Store.OrdersQueryService.OrderedProduct", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -49,9 +49,9 @@ namespace OrdersQueryService.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Store.QueryService.OrderedProduct", b =>
+            modelBuilder.Entity("Store.OrdersQueryService.OrderedProduct", b =>
                 {
-                    b.HasOne("Store.QueryService.Order", "Order")
+                    b.HasOne("Store.OrdersQueryService.Order", "Order")
                         .WithMany("Products")
                         .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);

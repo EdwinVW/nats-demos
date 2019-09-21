@@ -1,4 +1,4 @@
-namespace Store.Messaging.Events
+namespace Store.OrderProcessingService.Domain.Events
 {
     public class OrderCreated : BusinessEvent
     {

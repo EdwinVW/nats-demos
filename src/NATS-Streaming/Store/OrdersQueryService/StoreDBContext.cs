@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Store.QueryService
+namespace Store.OrdersQueryService
 {
     public class StoreDBContext : DbContext
     {

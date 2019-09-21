@@ -12,12 +12,11 @@ namespace MultiUserSimulator
         {
             if (args.Length != 1)
             {
-                Console.WriteLine("Usage: HighVolumeApp <number of parallel simulation tasks> <simulation duration in seconds>");
+                Console.WriteLine("Usage: HighVolumeApp <number of parallel simulation tasks>");
                 return;
             }
 
             int numOfSimulationThreads = Convert.ToInt32(args[0]);
-            int simulationDurationInSeconds = Convert.ToInt32(args[0]);
 
             CancellationTokenSource cts = new CancellationTokenSource();
             Task[] simulationTasks = StartSimulation(numOfSimulationThreads, cts.Token);
