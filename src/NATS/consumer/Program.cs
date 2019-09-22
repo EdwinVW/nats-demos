@@ -30,14 +30,17 @@ namespace consumer
 
         private static void SubscribeInit()
         {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
-                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
                 {
                     Console.Clear();
                 };
 
-                IAsyncSubscription s = c.SubscribeAsync("nats.demo.init", h);
+                IAsyncSubscription s = 
+                    conn.SubscribeAsync("nats.demo.init", handler);
+
                 s.Start();
                 
                 Wait();
@@ -46,9 +49,10 @@ namespace consumer
 
         private static void SubscribePubSub()
         {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
-                ISyncSubscription sub = c.SubscribeSync("nats.demo.pubsub");
+                ISyncSubscription sub = conn.SubscribeSync("nats.demo.pubsub");
 
                 while (!_exit)
                 {
@@ -62,15 +66,18 @@ namespace consumer
 
         private static void SubscribeQueueGroups()
         {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
-                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
                 {
                     string data = Encoding.UTF8.GetString(args.Message.Data);
                     Console.WriteLine(data);
                 };
 
-                IAsyncSubscription s = c.SubscribeAsync("nats.demo.queuegroups", "load-balancing-queue", h);
+                IAsyncSubscription s = conn.SubscribeAsync(
+                    "nats.demo.queuegroups", "load-balancing-queue", handler);
+
                 s.Start();
 
                 Wait();
@@ -79,18 +86,21 @@ namespace consumer
 
         private static void SubscribeRequestResponse()
         {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
-                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
                 {
                     string data = Encoding.UTF8.GetString(args.Message.Data);
                     Console.WriteLine(data);
 
                     byte[] responseData = Encoding.UTF8.GetBytes($"ACK for {data}");
-                    c.Publish(args.Message.Reply, responseData);
+                    conn.Publish(args.Message.Reply, responseData);
                 };
 
-                IAsyncSubscription s = c.SubscribeAsync("nats.demo.requestresponse", "request-response-queue", h);
+                IAsyncSubscription s = conn.SubscribeAsync(
+                    "nats.demo.requestresponse", "request-response-queue", handler);
+                
                 s.Start();
 
                 Wait();
@@ -99,15 +109,17 @@ namespace consumer
 
         private static void SubscribeWildcards(string subject)
         {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
-                EventHandler<MsgHandlerEventArgs> h = (sender, args) =>
+                EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
                 {
                     string data = Encoding.UTF8.GetString(args.Message.Data);
                     Console.WriteLine($"{data} (received on subject {subject})");
                 };
 
-                IAsyncSubscription s = c.SubscribeAsync(subject, h);
+                IAsyncSubscription s = conn.SubscribeAsync(subject, handler);
+
                 s.Start();
             }
         }

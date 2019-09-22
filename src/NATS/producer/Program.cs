@@ -88,7 +88,8 @@ namespace producer
             Console.WriteLine("Pub/Sub demo");
             Console.WriteLine("============");
 
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
                 for (int i = 1; i <= _messageCount; i++)
                 {
@@ -98,7 +99,7 @@ namespace producer
 
                     byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    c.Publish("nats.demo.pubsub", data);
+                    conn.Publish("nats.demo.pubsub", data);
                     
                     Thread.Sleep(_sendIntervalMs);
                 }
@@ -110,7 +111,8 @@ namespace producer
             Console.WriteLine("Load-balancing demo");
             Console.WriteLine("===================");
 
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
                 for (int i = 1; i <= _messageCount; i++)
                 {
@@ -120,7 +122,7 @@ namespace producer
 
                     byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    c.Publish("nats.demo.queuegroups", data);
+                    conn.Publish("nats.demo.queuegroups", data);
                     
                     Thread.Sleep(_sendIntervalMs);
                 }
@@ -132,10 +134,11 @@ namespace producer
             Console.WriteLine("Request/Response (explicit) demo");
             Console.WriteLine("================================");
 
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
                 string replySubject = Guid.NewGuid().ToString();
-                ISyncSubscription subscription = c.SubscribeSync(replySubject);
+                ISyncSubscription subscription = conn.SubscribeSync(replySubject);
 
                 for (int i = 1; i <= _messageCount; i++)
                 {
@@ -146,7 +149,7 @@ namespace producer
                     // send with reply subject
                     byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    c.Publish("nats.demo.requestresponse", replySubject, data);
+                    conn.Publish("nats.demo.requestresponse", replySubject, data);
 
                     // wait for response in reply subject
                     var response = subscription.NextMessage(5000);
@@ -164,7 +167,8 @@ namespace producer
             Console.WriteLine("Request/Response (implicit) demo");
             Console.WriteLine("================================");
 
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
                 for (int i = 1; i <= _messageCount; i++)
                 {
@@ -174,7 +178,7 @@ namespace producer
                     
                     byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    var response = c.Request("nats.demo.requestresponse", data, 5000);
+                    var response = conn.Request("nats.demo.requestresponse", data, 5000);
 
                     var responseMsg = Encoding.UTF8.GetString(response.Data);
 
@@ -195,7 +199,8 @@ namespace producer
             Console.WriteLine("- nats.demo.wildcards.*");
             Console.WriteLine("- nats.demo.wildcards.>");
 
-            using (IConnection c = new ConnectionFactory().CreateConnection())
+            ConnectionFactory factory = new ConnectionFactory();
+            using (IConnection conn = factory.CreateConnection())
             {
                 while (true)
                 {
@@ -212,7 +217,7 @@ namespace producer
                     
                     byte[] data = Encoding.UTF8.GetBytes(message);
                     
-                    c.Publish(subject, data);
+                    conn.Publish(subject, data);
                 }
             }
         }        
