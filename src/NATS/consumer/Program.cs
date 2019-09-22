@@ -94,8 +94,12 @@ namespace consumer
                     string data = Encoding.UTF8.GetString(args.Message.Data);
                     Console.WriteLine(data);
 
-                    byte[] responseData = Encoding.UTF8.GetBytes($"ACK for {data}");
-                    conn.Publish(args.Message.Reply, responseData);
+                    string replySubject = args.Message.Reply;
+                    if (replySubject != null)
+                    {
+                        byte[] responseData = Encoding.UTF8.GetBytes($"ACK for {data}");
+                        conn.Publish(replySubject, responseData);
+                    }
                 };
 
                 IAsyncSubscription s = conn.SubscribeAsync(
