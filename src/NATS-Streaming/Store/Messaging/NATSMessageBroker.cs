@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using NATS.Client;
 using static Store.Messaging.Delegates;
 
@@ -13,15 +11,13 @@ namespace Store.Messaging
     {
         private bool _disposed = false;
         private string _url;
-        private CancellationTokenSource _cts;
-        private List<Task> _consumerTasks;
+        private List<IAsyncSubscription> _subscriptions;
         private IConnection _connection;
 
         public NATSMessageBroker(string url)
         {
             _url = url;
-            _cts = new CancellationTokenSource();
-            _consumerTasks = new List<Task>();
+            _subscriptions = new List<IAsyncSubscription>();
             var cf = new ConnectionFactory();
             _connection = cf.CreateConnection(_url);
         }
@@ -62,18 +58,7 @@ namespace Store.Messaging
 
         public void StartMessageConsumer(string subject, NATSRequestAvailableCallback callback)
         {
-            _consumerTasks.Add(Task.Run(() => ConsumerWorker(subject, callback)));
-        }
-
-        public void StopMessageConsumers()
-        {
-            _cts.Cancel();
-            Task.WaitAll(_consumerTasks.ToArray(), 5000);
-        }
-
-        private void ConsumerWorker(string subject, NATSRequestAvailableCallback callback)
-        {
-            _connection.SubscribeAsync(subject, (obj, args) =>
+            var sub = _connection.SubscribeAsync(subject, (obj, args) =>
             {
                 string message = System.Text.Encoding.UTF8.GetString(args.Message.Data);
                 string eventType = args.Message.Subject.Split('.').Last();
@@ -83,8 +68,15 @@ namespace Store.Messaging
                     _connection.Publish(args.Message.Reply, Encoding.UTF8.GetBytes(response));
                 }
             });
+            _subscriptions.Add(sub);
+        }
 
-            _cts.Token.WaitHandle.WaitOne();
-        }      
+        public void StopMessageConsumers()
+        {
+            foreach(var sub in _subscriptions)
+            {
+                sub.Drain();
+            }
+        }
     }
 }

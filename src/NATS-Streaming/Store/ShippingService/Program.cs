@@ -10,30 +10,32 @@ namespace Store.ShippingService
     class Program
     {
         private static STANMessageBroker _eventsMessageBroker;
-        
+
         static void Main(string[] args)
         {
             Console.Clear();
 
-            _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "ShippingService");
-            ulong? lastSeqNr = GetLastSequenceNumber();
-            if (lastSeqNr != null)
+            using (_eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "ShippingService"))
             {
-                lastSeqNr++;
-                Console.WriteLine($"Replaying from seq# {lastSeqNr}");
-            }
-            else
-            {
-                Console.WriteLine("Replaying all messages.");
-            }
-            _eventsMessageBroker.StartMessageConsumer("store.events", EventReceived, true, lastSeqNr);
+                ulong? lastSeqNr = GetLastSequenceNumber();
+                if (lastSeqNr != null)
+                {
+                    lastSeqNr++;
+                    Console.WriteLine($"Replaying from seq# {lastSeqNr}");
+                }
+                else
+                {
+                    Console.WriteLine("Replaying all messages.");
+                }
 
-            Console.WriteLine("ShippingService online.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
+                _eventsMessageBroker.StartRegularMessageConsumer("store.events", EventReceived, true, lastSeqNr);
 
-            _eventsMessageBroker.StopMessageConsumers();
-            _eventsMessageBroker.Dispose();
+                Console.WriteLine("ShippingService online.");
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey(true);
+
+                _eventsMessageBroker.StopMessageConsumers();
+            }
         }
 
         private static void EventReceived(string messageType, string messageData, ulong sequenceNumber)
@@ -180,7 +182,7 @@ namespace Store.ShippingService
                 }
                 return info.LastSeqNr;
             }
-        } 
+        }
 
         private static async void UpdateLastSequenceNumber(ulong sequenceNumber)
         {
@@ -197,6 +199,6 @@ namespace Store.ShippingService
                 }
                 await dbContext.SaveChangesAsync();
             }
-        }        
+        }
     }
 }

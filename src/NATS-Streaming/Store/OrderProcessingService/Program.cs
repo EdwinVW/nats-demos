@@ -17,25 +17,23 @@ namespace Store.OrderProcessingService
 
         static void Main(string[] args)
         {
-            //_repo = new NATSOrderRepository();
             _repo = new SQLiteOrderRepository();
 
-            _commandsMessageBroker = new NATSMessageBroker("nats://localhost:4222");
-            _commandsMessageBroker.StartMessageConsumer("store.commands.*", RequestAvailable);
+            using (_commandsMessageBroker = new NATSMessageBroker("nats://localhost:4222"))
+            {
+                using (_eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrderprocessingService"))
+                {
+                    _commandsMessageBroker.StartMessageConsumer("store.commands.*", RequestAvailable);
 
-            _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrderprocessingService");
+                    Console.Clear();
+                    Console.WriteLine("OrderProcessingService online.");
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey(true);
 
-            Console.Clear();
-            Console.WriteLine("OrderProcessingService online.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
-
-            _repo.Close();
-            _commandsMessageBroker.StopMessageConsumers();
-            _commandsMessageBroker.Dispose();
-
-            _eventsMessageBroker.StopMessageConsumers();
-            _eventsMessageBroker.Dispose();
+                    _repo.Close();
+                    _commandsMessageBroker.StopMessageConsumers();
+                }
+            }
         }
 
         private static string RequestAvailable(string messageType, string messageData)

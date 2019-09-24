@@ -15,21 +15,22 @@ namespace Store.OrdersQueryService
 
         static void Main(string[] args)
         {
-            _eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrdersQueryService");
-            _eventsMessageBroker.StartDurableMessageConsumer("store.events", EventReceived, "OrdersQueryService");
+            using (_eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "OrdersQueryService"))
+            {
+                using (_queriesMessageBroker = new NATSMessageBroker("nats://localhost:4222"))
+                {
+                    _eventsMessageBroker.StartDurableMessageConsumer("store.events", EventReceived, "OrdersQueryService");
+                    _queriesMessageBroker.StartMessageConsumer("store.queries.*", QueryReceived);
 
-            _queriesMessageBroker = new NATSMessageBroker("nats://localhost:4222");
-            _queriesMessageBroker.StartMessageConsumer("store.queries.*", QueryReceived);
+                    Console.Clear();
+                    Console.WriteLine("OrdersQueryService online.");
+                    Console.WriteLine("Press any key to exit...");
+                    Console.ReadKey(true);
 
-            Console.Clear();
-            Console.WriteLine("OrdersQueryService online.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
-
-            _eventsMessageBroker.StopMessageConsumers();
-            _eventsMessageBroker.Dispose();
-            _queriesMessageBroker.StopMessageConsumers();
-            _queriesMessageBroker.Dispose();
+                    _eventsMessageBroker.StopMessageConsumers();
+                    _queriesMessageBroker.StopMessageConsumers();
+                }
+            }
         }
 
         private static void EventReceived(string messageType, string messageData, ulong sequenceNumber)
