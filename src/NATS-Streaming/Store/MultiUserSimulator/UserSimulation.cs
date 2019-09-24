@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Store.Messaging;
@@ -112,7 +110,7 @@ namespace MultiUserSimulator
 
         private void WaitRandom()
         {
-            Thread.Sleep(_random.Next(100, 10000));
+            Thread.Sleep(_random.Next(100, 1000));
         }
     }
 }

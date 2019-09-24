@@ -25,7 +25,7 @@ namespace Store.OrderProcessingService.Repositories
                 dbContext.Entry(order).Collection(o => o.Events).Load();
                 foreach (OrderEvent orderEvent in order.Events.OrderBy(e => e.Version))
                 {
-                    string eventTypeDescriptor = orderEvent.EventType;
+                    string eventTypeDescriptor = $"Store.OrderProcessingService.Domain.Events.{orderEvent.EventType}";
                     Type eventType = Type.GetType(eventTypeDescriptor);
                     string eventData = orderEvent.EventData;
                     dynamic e = JsonSerializer.Deserialize(eventData, eventType);
@@ -38,7 +38,7 @@ namespace Store.OrderProcessingService.Repositories
 
         public async void Update(string orderNumber, BusinessEvent e)
         {
-            string eventType = e.GetType().AssemblyQualifiedName;
+            string eventType = e.GetType().Name;
             string eventData = JsonSerializer.Serialize(e, e.GetType());
 
             using (var dbContext = new EventStoreDBContext())

@@ -436,3 +436,4 @@ $RECYCLE.BIN/
 ## SQLite databases
 ##
 *.db
+*.db-journal
