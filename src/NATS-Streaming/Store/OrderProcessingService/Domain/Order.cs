@@ -10,7 +10,7 @@ namespace Store.OrderProcessingService.Domain
         public OrderStatus Status { get; private set; }
         public List<OrderedProduct> Products { get; private set; }
         public decimal TotalPrice => Products.Sum(p => p.Price);
-        public string ShippingAddress { get; set; }
+        public string ShippingAddress { get; private set; }
 
         public Order()
         {
