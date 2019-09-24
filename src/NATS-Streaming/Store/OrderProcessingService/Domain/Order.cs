@@ -153,17 +153,17 @@ namespace Store.OrderProcessingService.Domain
             switch (productNumber)
             {
                 case "1":
-                    return 31.56M;
+                    return 31.95M;
                 case "2":
-                    return 31.44M;
+                    return 31.45M;
                 case "3":
-                    return 57.17M;
+                    return 57.15M;
                 case "4":
                     return 35;
                 case "5":
-                    return 30.38M;             
+                    return 30.40M;             
                 case "6":
-                    return 44.79M;             
+                    return 44.80M;             
             }
             return 0;
         }
