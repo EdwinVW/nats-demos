@@ -95,7 +95,7 @@ namespace Store.ShippingService
                 {
                     order.Products.Add(new OrderedProduct
                     {
-                        Id = Guid.NewGuid().ToString(),
+                        Id = Guid.NewGuid().ToString("N"),
                         ProductNumber = e.ProductNumber
                     });
                     await dbContext.SaveChangesAsync();

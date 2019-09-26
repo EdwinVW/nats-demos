@@ -15,7 +15,7 @@ namespace Store.OrderProcessingService.Repositories
 
         public OrderEvent()
         {
-            Id = Guid.NewGuid().ToString();
+            Id = Guid.NewGuid().ToString("N");
         }
     }
 }
