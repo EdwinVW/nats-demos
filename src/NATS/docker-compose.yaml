@@ -1,0 +1,29 @@
+version: '3'
+services:
+
+  nats01:
+    image: nats:latest
+    container_name: nats01
+    entrypoint: /nats-server
+    command: -p 4222 -cluster nats://0.0.0.0:5222
+    ports:
+      - "4222:4222"
+      - "5222:5222"
+
+  nats02:
+    image: nats:latest
+    container_name: nats02
+    entrypoint: /nats-server
+    command: -p 4223 -cluster nats://0.0.0.0:5223 -routes nats://nats01:5222
+    ports:
+      - "4223:4223"
+      - "5223:5223"      
+
+  nats03:
+    image: nats:latest
+    container_name: nats03
+    entrypoint: /nats-server
+    command: -p 4224 -cluster nats://0.0.0.0:5224 -routes nats://nats01:5222
+    ports:
+      - "4224:4224"
+      - "5224:5224"      
