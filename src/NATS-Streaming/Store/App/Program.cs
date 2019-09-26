@@ -15,7 +15,7 @@ namespace Store.App
         {
             "Clean Code",
             "The Pragmatic Programmer",
-            "Domain Driven Design: Tackling complexity in the heart of the software",
+            "DDD: Tackling complexity in the heart of the software",
             "Patterns of Enterprise Application Architecture",
             "Building Microservices",
             "Patterns, Principles and Practices od Domain Driven Design"

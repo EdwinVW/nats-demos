@@ -14,6 +14,10 @@ namespace Store.ShippingService
         static void Main(string[] args)
         {
             Console.Clear();
+            Console.WriteLine("Press any key to start the ShippingService");
+            Console.ReadKey(true);
+
+            Console.Clear();
 
             using (_eventsMessageBroker = new STANMessageBroker("nats://localhost:4223", "ShippingService"))
             {
