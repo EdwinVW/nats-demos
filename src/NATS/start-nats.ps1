@@ -1,1 +1,0 @@
-Start-Process -FilePath "d:\tools\nats\nats-server.exe"

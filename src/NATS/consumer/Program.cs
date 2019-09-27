@@ -12,28 +12,42 @@ namespace consumer
 
         static void Main(string[] args)
         {
-            string url = "nats://localhost:4222";
-            if (args.Length == 1)
+            using (_connection = ConnectToNatsCluster())
             {
-                url = args[0];
+                SubscribePubSub();
+                SubscribeQueueGroups();
+                SubscribeRequestResponse();
+                SubscribeWildcards("nats.*.wildcards");
+                SubscribeWildcards("nats.demo.wildcards.*");
+                SubscribeWildcards("nats.demo.wildcards.>");
+                SubscribeClear();
+
+                Console.Clear();
+                Console.WriteLine($"Connected to {_connection.ConnectedUrl}.");
+                Console.WriteLine("Consumers started");
+                Console.ReadKey(true);
+                _exit = true;
             }
+        }
 
+        private static IConnection ConnectToNatsCluster()
+        {
             ConnectionFactory factory = new ConnectionFactory();
-            _connection = factory.CreateConnection(url);
-
-            SubscribePubSub();
-            SubscribeQueueGroups();
-            SubscribeRequestResponse();
-            SubscribeWildcards("nats.*.wildcards");
-            SubscribeWildcards("nats.demo.wildcards.*");
-            SubscribeWildcards("nats.demo.wildcards.>");
-            SubscribeClear();
-
-            Console.Clear();
-            System.Console.WriteLine("Consumers started");
-            Console.ReadKey(true);
-            _exit = true;
-            _connection.Close();
+            var options = ConnectionFactory.GetDefaultOptions();
+            options.Servers = new string[] {
+                "nats://localhost:4222",
+                "nats://localhost:4223",
+                "nats://localhost:4224"
+            };
+            options.AllowReconnect = true;
+            options.ReconnectWait = 0;
+            options.PingInterval = 100;
+            options.MaxReconnect = Options.ReconnectForever;
+            options.DisconnectedEventHandler +=
+                (sender, args) => Console.WriteLine($"Client disconnected!!");
+            options.ReconnectedEventHandler +=
+                (sender, args) => Console.WriteLine($"Client reconnected to {args.Conn.ConnectedUrl}.");
+            return factory.CreateConnection(options);
         }
 
         private static void SubscribePubSub()
@@ -93,7 +107,7 @@ namespace consumer
             };
 
             IAsyncSubscription s = _connection.SubscribeAsync(
-                subject,  "wildcards-queue", handler);
+                subject, "wildcards-queue", handler);
         }
 
         private static void LogMessage(string message)

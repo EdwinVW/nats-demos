@@ -16,15 +16,9 @@ namespace producer
 
         static void Main(string[] args)
         {
-            if (args.Length == 2)
-            {
-                _messageCount = Convert.ToInt32(args[0]);
-                _sendIntervalMs = Convert.ToInt32(args[1]);
-            }
-
             bool exit = false;
 
-            using (_connection = new ConnectionFactory().CreateConnection())
+            using (_connection = ConnectToNatsCluster())
             {
                 while (!exit)
                 {
@@ -80,6 +74,26 @@ namespace producer
                     Clear();
                 }
             }
+        }
+
+        private static IConnection ConnectToNatsCluster()
+        {
+            ConnectionFactory factory = new ConnectionFactory();
+            var options = ConnectionFactory.GetDefaultOptions();
+            options.Servers = new string[] {
+                "nats://localhost:4222",
+                "nats://localhost:4223",
+                "nats://localhost:4224"
+            };
+            options.AllowReconnect = true;
+            options.ReconnectWait = 0;
+            options.PingInterval = 100;
+            options.MaxReconnect = Options.ReconnectForever;
+            options.DisconnectedEventHandler +=
+                (sender, args) => Console.WriteLine($"Client disconnected!!");
+            options.ReconnectedEventHandler +=
+                (sender, args) => Console.WriteLine($"Client reconnected to {args.Conn.ConnectedUrl}.");
+            return factory.CreateConnection(options);
         }
 
         private static void PubSub()
