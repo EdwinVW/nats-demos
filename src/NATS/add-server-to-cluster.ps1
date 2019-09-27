@@ -1,0 +1,1 @@
+Start-Process -FilePath "d:\tools\nats\nats-server.exe" -ArgumentList "-p 4225 -cluster nats://localhost:5225 -routes nats://localhost:5222"
