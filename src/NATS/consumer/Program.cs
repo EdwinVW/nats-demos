@@ -14,13 +14,14 @@ namespace consumer
         {
             ConnectionFactory factory = new ConnectionFactory();
             _connection = factory.CreateConnection();
-            SubscribeInit();
-            Task.Run(() => SubscribePubSub());
+
+            SubscribePubSub();
             SubscribeQueueGroups();
             SubscribeRequestResponse();
             SubscribeWildcards("nats.*.wildcards");
             SubscribeWildcards("nats.demo.wildcards.*");
             SubscribeWildcards("nats.demo.wildcards.>");
+            SubscribeClear();
 
             Console.Clear();
             System.Console.WriteLine("Consumers started");
@@ -29,36 +30,21 @@ namespace consumer
             _connection.Close();
         }
 
-        private static void SubscribeInit()
-        {
-            EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
-            {
-                Console.Clear();
-            };
-
-            IAsyncSubscription s = 
-                _connection.SubscribeAsync("nats.demo.init", handler);
-
-            s.Start();
-        }
-
         private static void SubscribePubSub()
         {
-            ISyncSubscription sub = _connection.SubscribeSync("nats.demo.pubsub");
-
-            while (!_exit)
+            Task.Run(() =>
             {
-                try
+                ISyncSubscription sub = _connection.SubscribeSync("nats.demo.pubsub");
+                while (!_exit)
                 {
-                    var message = sub.NextMessage(5000);
-                    string data = Encoding.UTF8.GetString(message.Data);
-                    Console.WriteLine(message);
+                    var message = sub.NextMessage();
+                    if (message != null)
+                    {
+                        string data = Encoding.UTF8.GetString(message.Data);
+                        LogMessage(data);
+                    }
                 }
-                catch (TimeoutException)
-                {
-                    // do nothing, keep loop alive
-                }
-            }
+            });
         }
 
         private static void SubscribeQueueGroups()
@@ -66,13 +52,11 @@ namespace consumer
             EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
             {
                 string data = Encoding.UTF8.GetString(args.Message.Data);
-                Console.WriteLine(data);
+                LogMessage(data);
             };
 
             IAsyncSubscription s = _connection.SubscribeAsync(
                 "nats.demo.queuegroups", "load-balancing-queue", handler);
-
-            s.Start();
         }
 
         private static void SubscribeRequestResponse()
@@ -80,7 +64,7 @@ namespace consumer
             EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
             {
                 string data = Encoding.UTF8.GetString(args.Message.Data);
-                Console.WriteLine(data);
+                LogMessage(data);
 
                 string replySubject = args.Message.Reply;
                 if (replySubject != null)
@@ -92,8 +76,6 @@ namespace consumer
 
             IAsyncSubscription s = _connection.SubscribeAsync(
                 "nats.demo.requestresponse", "request-response-queue", handler);
-            
-            s.Start();
         }
 
         private static void SubscribeWildcards(string subject)
@@ -101,12 +83,27 @@ namespace consumer
             EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
             {
                 string data = Encoding.UTF8.GetString(args.Message.Data);
-                Console.WriteLine($"{data} (received on subject {subject})");
+                LogMessage($"{data} (received on subject {subject})");
             };
 
-            IAsyncSubscription s = _connection.SubscribeAsync(subject, handler);
+            IAsyncSubscription s = _connection.SubscribeAsync(
+                subject,  "wildcards-queue", handler);
+        }
 
-            s.Start();
+        private static void LogMessage(string message)
+        {
+            Console.WriteLine($"{DateTime.Now.ToString("HH:mm:ss.fffffff")} - {message}");
+        }
+
+        private static void SubscribeClear()
+        {
+            EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
+            {
+                Console.Clear();
+            };
+
+            IAsyncSubscription s = _connection.SubscribeAsync(
+                "nats.demo.clear", handler);
         }
     }
 }

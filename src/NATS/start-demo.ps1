@@ -1,6 +1,12 @@
-cd ..\producer
-Start-Process -FilePath "dotnet" -ArgumentList "run"
+pushd
+
+cd producer
+dotnet build
+Start-Process -FilePath "dotnet" -ArgumentList "bin\Debug\netcoreapp3.0\producer.dll"
 
 cd ..\consumer
-Start-Process -FilePath "dotnet" -ArgumentList "run"
-Start-Process -FilePath "dotnet" -ArgumentList "run"
+dotnet build
+Start-Process -FilePath "dotnet" -ArgumentList "bin\Debug\netcoreapp3.0\consumer.dll"
+Start-Process -FilePath "dotnet" -ArgumentList "bin\Debug\netcoreapp3.0\consumer.dll"
+Start-Process -FilePath "dotnet" -ArgumentList "bin\Debug\netcoreapp3.0\consumer.dll"
+popd

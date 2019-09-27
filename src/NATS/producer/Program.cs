@@ -8,8 +8,10 @@ namespace producer
     class Program
     {
         private static int _messageCount = 25;
-        private static int _sendIntervalMs = 500;
+        private static int _sendIntervalMs = 100;
         private const string ALLOWED_OPTIONS = "0123456789qQ";
+
+        private static IConnection _connection;
 
         static void Main(string[] args)
         {
@@ -20,177 +22,162 @@ namespace producer
             }
 
             bool exit = false;
-            
-            while (!exit)
+
+            using (_connection = new ConnectionFactory().CreateConnection())
             {
-                Console.Clear();
-
-                Console.WriteLine("NATS demo producer");
-                Console.WriteLine("==================");
-                Console.WriteLine("Select mode:");
-                Console.WriteLine("0) Pub / Sub");
-                Console.WriteLine("1) Load-balancing (queue groups)");
-                Console.WriteLine("2) Request / Response (explicit)");
-                Console.WriteLine("3) Request / Response (implicit)");
-                Console.WriteLine("4) Wildcards");
-                Console.WriteLine("q) Quit");
-
-                // get input
-                ConsoleKeyInfo input;
-                do
+                while (!exit)
                 {
-                    input = Console.ReadKey(true);
-                } while (!ALLOWED_OPTIONS.Contains(input.KeyChar));
+                    Console.Clear();
 
-                Console.Clear();
-                InitializeSubscribers();
+                    Console.WriteLine("NATS demo producer");
+                    Console.WriteLine("==================");
+                    Console.WriteLine("Select mode:");
+                    Console.WriteLine("0) Pub / Sub");
+                    Console.WriteLine("1) Load-balancing (queue groups)");
+                    Console.WriteLine("2) Request / Response (explicit)");
+                    Console.WriteLine("3) Request / Response (implicit)");
+                    Console.WriteLine("4) Wildcards");
+                    Console.WriteLine("q) Quit");
 
-                switch (input.KeyChar)
-                {
-                    case '0':
-                        PubSub();
-                        break;
-                    case '1':
-                        QueueGroups();
-                        break;
-                    case '2':
-                        RequestResponseExplicit();
-                        break;
-                    case '3':
-                        RequestResponseImplicit();
-                        break;
-                    case '4':
-                        Wildcards();
-                        break;
-                    case 'q':
-                    case 'Q':
-                        exit = true;
-                        continue;
+                    // get input
+                    ConsoleKeyInfo input;
+                    do
+                    {
+                        input = Console.ReadKey(true);
+                    } while (!ALLOWED_OPTIONS.Contains(input.KeyChar));
+
+                    switch (input.KeyChar)
+                    {
+                        case '0':
+                            PubSub();
+                            break;
+                        case '1':
+                            QueueGroups();
+                            break;
+                        case '2':
+                            RequestResponseExplicit();
+                            break;
+                        case '3':
+                            RequestResponseImplicit();
+                            break;
+                        case '4':
+                            Wildcards();
+                            break;
+                        case 'q':
+                        case 'Q':
+                            exit = true;
+                            continue;
+                    }
+
+                    Console.WriteLine();
+                    Console.WriteLine("Done. Press any key to continue...");
+                    Console.ReadKey(true);
+                    Clear();
                 }
-
-                Console.WriteLine();
-                Console.WriteLine("Done. Press any key to continue...");
-                Console.ReadKey(true);
-            }
-        }
-
-        private static void InitializeSubscribers()
-        {
-            using (IConnection c = new ConnectionFactory().CreateConnection())
-            {
-                c.Publish("nats.demo.init", null);
-                c.Flush();
             }
         }
 
         private static void PubSub()
         {
+            Console.Clear();
             Console.WriteLine("Pub/Sub demo");
             Console.WriteLine("============");
 
-            ConnectionFactory factory = new ConnectionFactory();
-            using (IConnection conn = factory.CreateConnection())
+            for (int i = 1; i <= _messageCount; i++)
             {
-                for (int i = 1; i <= _messageCount; i++)
-                {
-                    string message = $"Message {i}";
+                string message = $"Message {i}";
 
-                    Console.WriteLine($"Sending: {message}");
+                Console.WriteLine($"Sending: {message}");
 
-                    byte[] data = Encoding.UTF8.GetBytes(message);
+                byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    conn.Publish("nats.demo.pubsub", data);
-                    
-                    Thread.Sleep(_sendIntervalMs);
-                }
+                _connection.Publish("nats.demo.pubsub", data);
+
+                Thread.Sleep(_sendIntervalMs);
             }
         }
 
         private static void QueueGroups()
         {
+            Console.Clear();
             Console.WriteLine("Load-balancing demo");
             Console.WriteLine("===================");
 
-            ConnectionFactory factory = new ConnectionFactory();
-            using (IConnection conn = factory.CreateConnection())
+            for (int i = 1; i <= _messageCount; i++)
             {
-                for (int i = 1; i <= _messageCount; i++)
-                {
-                    string message = $"Message {i}";
+                string message = $"Message {i}";
 
-                    Console.WriteLine($"Sending: {message}");
+                Console.WriteLine($"Sending: {message}");
 
-                    byte[] data = Encoding.UTF8.GetBytes(message);
+                byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    conn.Publish("nats.demo.queuegroups", data);
-                    
-                    Thread.Sleep(_sendIntervalMs);
-                }
+                _connection.Publish("nats.demo.queuegroups", data);
+
+                Thread.Sleep(_sendIntervalMs);
             }
         }
 
         private static void RequestResponseExplicit()
         {
+            Console.Clear();
             Console.WriteLine("Request/Response (explicit) demo");
             Console.WriteLine("================================");
 
-            ConnectionFactory factory = new ConnectionFactory();
-            using (IConnection conn = factory.CreateConnection())
+            for (int i = 1; i <= _messageCount; i++)
             {
-                string replySubject = Guid.NewGuid().ToString();
-                ISyncSubscription subscription = conn.SubscribeSync(replySubject);
+                string replySubject = $"_INBOX.{Guid.NewGuid().ToString("N")}";
+                ISyncSubscription subscription = _connection.SubscribeSync(replySubject);
+                subscription.AutoUnsubscribe(1);
 
-                for (int i = 1; i <= _messageCount; i++)
-                {
-                    string message = $"Message {i}";
+                // client also has a convenience-method to do this in line:
+                //string replySubject = conn.NewInbox();
 
-                    Console.WriteLine($"Sending: {message}");
+                string message = $"Message {i}";
 
-                    // send with reply subject
-                    byte[] data = Encoding.UTF8.GetBytes(message);
+                Console.WriteLine($"Sending: {message}");
 
-                    conn.Publish("nats.demo.requestresponse", replySubject, data);
+                // send with reply subject
+                byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    // wait for response in reply subject
-                    var response = subscription.NextMessage(5000);
+                _connection.Publish("nats.demo.requestresponse", replySubject, data);
 
-                    string responseMsg = Encoding.UTF8.GetString(response.Data);
-                    Console.WriteLine($"Response: {responseMsg}");
-                    
-                    Thread.Sleep(_sendIntervalMs);
-                }
+                // wait for response in reply subject
+                var response = subscription.NextMessage(5000);
+
+                string responseMsg = Encoding.UTF8.GetString(response.Data);
+                Console.WriteLine($"Response: {responseMsg}");
+
+                Thread.Sleep(_sendIntervalMs);
             }
         }
 
         private static void RequestResponseImplicit()
         {
+            Console.Clear();
             Console.WriteLine("Request/Response (implicit) demo");
             Console.WriteLine("================================");
 
-            ConnectionFactory factory = new ConnectionFactory();
-            using (IConnection conn = factory.CreateConnection())
+            for (int i = 1; i <= _messageCount; i++)
             {
-                for (int i = 1; i <= _messageCount; i++)
-                {
-                    string message = $"Message {i}";
+                string message = $"Message {i}";
 
-                    Console.WriteLine($"Sending: {message}");
-                    
-                    byte[] data = Encoding.UTF8.GetBytes(message);
+                Console.WriteLine($"Sending: {message}");
 
-                    var response = conn.Request("nats.demo.requestresponse", data, 5000);
+                byte[] data = Encoding.UTF8.GetBytes(message);
 
-                    var responseMsg = Encoding.UTF8.GetString(response.Data);
+                var response = _connection.Request("nats.demo.requestresponse", data, 5000);
 
-                    Console.WriteLine($"Response: {responseMsg}");
-                    
-                    Thread.Sleep(_sendIntervalMs);
-                }
+                var responseMsg = Encoding.UTF8.GetString(response.Data);
+
+                Console.WriteLine($"Response: {responseMsg}");
+
+                Thread.Sleep(_sendIntervalMs);
             }
         }
 
         private static void Wildcards()
         {
+            Console.Clear();
             Console.WriteLine("Wildcards demo");
             Console.WriteLine("==============");
 
@@ -199,27 +186,30 @@ namespace producer
             Console.WriteLine("- nats.demo.wildcards.*");
             Console.WriteLine("- nats.demo.wildcards.>");
 
-            ConnectionFactory factory = new ConnectionFactory();
-            using (IConnection conn = factory.CreateConnection())
+            int messageCounter = 1;
+            while (true)
             {
-                while (true)
+                Console.Write("\nSubject: ");
+                string subject = Console.ReadLine();
+                if (string.IsNullOrEmpty(subject))
                 {
-                    Console.Write("\nSubject: ");
-                    string subject = Console.ReadLine();
-                    if (string.IsNullOrEmpty(subject))
-                    {
-                        return;
-                    }
-
-                    string message = DateTime.Now.ToString("hh:mm:ss");
-
-                    Console.WriteLine($"Sending: {message} to {subject}");
-                    
-                    byte[] data = Encoding.UTF8.GetBytes(message);
-                    
-                    conn.Publish(subject, data);
+                    return;
                 }
+
+                string message = $"Message {messageCounter++}";
+
+                Console.WriteLine($"Sending: {message} to {subject}");
+
+                byte[] data = Encoding.UTF8.GetBytes(message);
+
+                _connection.Publish(subject, data);
             }
-        }        
+        }
+
+        private static void Clear()
+        {
+            Console.Clear();
+            _connection.Publish("nats.demo.clear", null);
+        }
     }
 }
