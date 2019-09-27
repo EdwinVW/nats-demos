@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using NATS.Client;
 
 namespace producer
@@ -9,7 +10,7 @@ namespace producer
     {
         private static int _messageCount = 25;
         private static int _sendIntervalMs = 100;
-        private const string ALLOWED_OPTIONS = "0123456789qQ";
+        private const string ALLOWED_OPTIONS = "012345qQ";
 
         private static IConnection _connection;
 
@@ -37,6 +38,7 @@ namespace producer
                     Console.WriteLine("2) Request / Response (explicit)");
                     Console.WriteLine("3) Request / Response (implicit)");
                     Console.WriteLine("4) Wildcards");
+                    Console.WriteLine("5) Continuous pub/sub");
                     Console.WriteLine("q) Quit");
 
                     // get input
@@ -62,6 +64,9 @@ namespace producer
                             break;
                         case '4':
                             Wildcards();
+                            break;
+                        case '5':
+                            ContinuousPubSub();
                             break;
                         case 'q':
                         case 'Q':
@@ -204,6 +209,32 @@ namespace producer
 
                 _connection.Publish(subject, data);
             }
+        }
+
+        private static void ContinuousPubSub()
+        {
+            Console.Clear();
+            Console.WriteLine("Continuous Pub/Sub demo");
+            Console.WriteLine("=======================");
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            var cancellationToken = cts.Token;
+            var task = Task.Run(() =>
+            {
+                int messageCounter = 1;
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    string message = $"Message {messageCounter++}";
+                    byte[] data = Encoding.UTF8.GetBytes(message);
+                    _connection.Publish("nats.demo.pubsub", data);
+                    Thread.Sleep(_sendIntervalMs);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+            }, cancellationToken);
+
+            Console.WriteLine("Started sending messages. Press any key to stop.");
+            Console.ReadKey();
+            cts.Cancel();
         }
 
         private static void Clear()

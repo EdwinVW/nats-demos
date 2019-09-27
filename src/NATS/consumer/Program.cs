@@ -12,8 +12,14 @@ namespace consumer
 
         static void Main(string[] args)
         {
+            string url = "nats://localhost:4222";
+            if (args.Length == 1)
+            {
+                url = args[0];
+            }
+
             ConnectionFactory factory = new ConnectionFactory();
-            _connection = factory.CreateConnection();
+            _connection = factory.CreateConnection(url);
 
             SubscribePubSub();
             SubscribeQueueGroups();
