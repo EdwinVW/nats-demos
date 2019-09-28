@@ -10,7 +10,7 @@ namespace producer
     {
         private static int _messageCount = 25;
         private static int _sendIntervalMs = 100;
-        private const string ALLOWED_OPTIONS = "012345qQ";
+        private const string ALLOWED_OPTIONS = "123456qQ";
 
         private static IConnection _connection;
 
@@ -27,12 +27,12 @@ namespace producer
                     Console.WriteLine("NATS demo producer");
                     Console.WriteLine("==================");
                     Console.WriteLine("Select mode:");
-                    Console.WriteLine("0) Pub / Sub");
-                    Console.WriteLine("1) Load-balancing (queue groups)");
-                    Console.WriteLine("2) Request / Response (explicit)");
-                    Console.WriteLine("3) Request / Response (implicit)");
-                    Console.WriteLine("4) Wildcards");
-                    Console.WriteLine("5) Continuous pub/sub");
+                    Console.WriteLine("1) Pub / Sub");
+                    Console.WriteLine("2) Load-balancing (queue groups)");
+                    Console.WriteLine("3) Request / Response (explicit)");
+                    Console.WriteLine("4) Request / Response (implicit)");
+                    Console.WriteLine("5) Wildcards");
+                    Console.WriteLine("6) Continuous pub/sub");
                     Console.WriteLine("q) Quit");
 
                     // get input
@@ -44,22 +44,22 @@ namespace producer
 
                     switch (input.KeyChar)
                     {
-                        case '0':
+                        case '1':
                             PubSub();
                             break;
-                        case '1':
+                        case '2':
                             QueueGroups();
                             break;
-                        case '2':
+                        case '3':
                             RequestResponseExplicit();
                             break;
-                        case '3':
+                        case '4':
                             RequestResponseImplicit();
                             break;
-                        case '4':
+                        case '5':
                             Wildcards();
                             break;
-                        case '5':
+                        case '6':
                             ContinuousPubSub();
                             break;
                         case 'q':
@@ -85,14 +85,17 @@ namespace producer
                 "nats://localhost:4223",
                 "nats://localhost:4224"
             };
+
             options.AllowReconnect = true;
             options.ReconnectWait = 0;
-            options.PingInterval = 100;
             options.MaxReconnect = Options.ReconnectForever;
+
             options.DisconnectedEventHandler +=
                 (sender, args) => Console.WriteLine($"Client disconnected!!");
+
             options.ReconnectedEventHandler +=
                 (sender, args) => Console.WriteLine($"Client reconnected to {args.Conn.ConnectedUrl}.");
+
             return factory.CreateConnection(options);
         }
 

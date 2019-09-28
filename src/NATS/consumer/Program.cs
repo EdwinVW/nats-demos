@@ -39,14 +39,17 @@ namespace consumer
                 "nats://localhost:4223",
                 "nats://localhost:4224"
             };
+
             options.AllowReconnect = true;
             options.ReconnectWait = 0;
-            options.PingInterval = 100;
             options.MaxReconnect = Options.ReconnectForever;
+
             options.DisconnectedEventHandler +=
                 (sender, args) => Console.WriteLine($"Client disconnected!!");
+
             options.ReconnectedEventHandler +=
                 (sender, args) => Console.WriteLine($"Client reconnected to {args.Conn.ConnectedUrl}.");
+
             return factory.CreateConnection(options);
         }
 
