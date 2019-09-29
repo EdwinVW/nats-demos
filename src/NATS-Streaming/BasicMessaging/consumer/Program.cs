@@ -8,6 +8,12 @@ namespace BasicMessaging.Consumer
     {
         static void Main(string[] args)
         {
+            if (args.Length != 1)
+            {
+                Console.WriteLine("Usage: consumer <clientid>");
+                return;
+            }
+
             string clientId = args[0];
 
             var cf = new StanConnectionFactory();
