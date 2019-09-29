@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using Store.Messaging;
 using Store.OrderProcessingService.Domain;

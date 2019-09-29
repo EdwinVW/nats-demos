@@ -86,7 +86,8 @@ namespace MultiUserSimulator
             {
                 Console.WriteLine($"Complete order #{orderNumber}");
 
-                string shippingAddress = $"Mainstreet {_random.Next(120, 220)}, {_random.Next(1011, 1019)} AS, Amsterdam";
+                string shippingAddress = 
+                    $"Mainstreet {_random.Next(120, 220)}, {_random.Next(1011, 1019)} AS, Amsterdam";
                 string messageType = "CompleteOrder";
                 string message = $"{orderNumber}|{shippingAddress}";
                 _messageBroker.Publish("store.commands", messageType, message);

@@ -32,7 +32,9 @@ namespace Store.OrderProcessingService.Repositories
                     {
                         string message = Encoding.UTF8.GetString(args.Message.Data);
                         string[] messageParts = message.Split('#');
-                        string eventTypeDescriptor = messageParts[0];
+
+                        string eventTypeDescriptor = 
+                            $"Store.OrderProcessingService.Domain.Events.{messageParts[0]}";
                         Type eventType = Type.GetType(eventTypeDescriptor);
                         string eventData = message.Substring(message.IndexOf('#') + 1);
                         dynamic e = JsonSerializer.Deserialize(eventData, eventType);
@@ -77,7 +79,7 @@ namespace Store.OrderProcessingService.Repositories
         {
             try
             {
-                string eventType = e.GetType().AssemblyQualifiedName;
+                string eventType = e.GetType().Name;
                 string eventData = JsonSerializer.Serialize(e, e.GetType());
                 string message = $"{eventType}#{eventData}";
                 _stanConnection.Publish(EVENTSTREAM_SUBJECT, Encoding.UTF8.GetBytes(message));
