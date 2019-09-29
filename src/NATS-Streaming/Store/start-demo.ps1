@@ -1,15 +1,15 @@
 pushd
 
 cd App
-Start-Process -FilePath "dotnet" -ArgumentList "run"
+dotnet build
+Start-Process "bin\Debug\netcoreapp3.0\App.exe"
 
 cd ..\OrderProcessingService
-Start-Process -FilePath "dotnet" -ArgumentList "run"
+dotnet build
+Start-Process "bin\Debug\netcoreapp3.0\OrderProcessingService.exe"
 
 cd ..\OrdersQueryService
-Start-Process -FilePath "dotnet" -ArgumentList "run"
-
-cd ..\ShippingService
-Start-Process -FilePath "dotnet" -ArgumentList "run"
+dotnet build
+Start-Process "bin\Debug\netcoreapp3.0\OrdersQueryService.exe"
 
 popd
