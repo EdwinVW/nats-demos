@@ -7,4 +7,4 @@ The repo contains the following demo projects:
   - Basic messaging demos (pub/sub, request/response, queue-groups, wildcards).
 - NATS-Streaming
   - BasicMessaging: basic messaging demo focussed on replaying messages.
-  - Store: event-based distributed book-store application using NATS and NATS-Streaming.
+  - Store: simple event-based distributed book-store application using NATS and NATS-Streaming.
