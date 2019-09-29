@@ -106,11 +106,11 @@ namespace consumer
             EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
             {
                 string data = Encoding.UTF8.GetString(args.Message.Data);
-                LogMessage($"{data} (received on subject {subject})");
+                LogMessage($"{data} (subject {subject})");
             };
 
             IAsyncSubscription s = _connection.SubscribeAsync(
-                subject, "wildcards-queue", handler);
+                subject, handler);
         }
 
         private static void LogMessage(string message)
