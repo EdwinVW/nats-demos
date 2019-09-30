@@ -73,6 +73,8 @@ namespace producer
                     Console.ReadKey(true);
                     Clear();
                 }
+
+                _connection.Drain(5000);
             }
         }
 

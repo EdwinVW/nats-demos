@@ -27,6 +27,8 @@ namespace consumer
                 Console.WriteLine("Consumers started");
                 Console.ReadKey(true);
                 _exit = true;
+
+                _connection.Drain(5000);
             }
         }
 
