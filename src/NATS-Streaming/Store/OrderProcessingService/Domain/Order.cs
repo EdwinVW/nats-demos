@@ -81,7 +81,7 @@ namespace Store.OrderProcessingService.Domain
 
             if (this.Status != OrderStatus.InProgress)
             {
-                return CommandHandlingResult.Fail("Error: products can only be removed from in progress orders.");
+                return CommandHandlingResult.Fail("Error: only in progress orders can be completed.");
             }
 
             var e = new OrderCompleted(this.OrderNumber, shippingAddress);

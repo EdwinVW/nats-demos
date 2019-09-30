@@ -9,9 +9,4 @@ ORDER BY OrderNumber;
 SELECT * 
 FROM ShippingInfo;
 
-/*
-delete from Products;
-delete from Orders;
-delete from ShippingInfo;
-*/
  

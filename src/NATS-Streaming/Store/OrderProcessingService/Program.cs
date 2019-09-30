@@ -41,15 +41,7 @@ namespace Store.OrderProcessingService
 
             try
             {
-                var method = DetermineHandlerMethod(messageType);
-                if (method != null)
-                {
-                    response = method.Invoke(null, new object[] { messageData }).ToString();
-                }
-                else
-                {
-                    response = $"Error: Received unknown message-type '{messageType}'.";
-                }
+                response = CallMessageHandler(messageType, messageData);
             }
             catch (Exception ex)
             {
@@ -59,23 +51,16 @@ namespace Store.OrderProcessingService
             return response;
         }
 
-        private static MethodInfo DetermineHandlerMethod(string messageType)
-        {
-            return typeof(Store.OrderProcessingService.Program)
-                .GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
-        }
-
         private static string CreateOrder(string messageData)
         {
             try
             {
-                string[] messageParts = messageData.Split('|');
-                string orderNumber = messageParts[0];
+                string orderNumber = messageData;
                 Console.WriteLine($"Create order #{orderNumber}");
 
                 Order order = _repo.GetByOrderNumber(orderNumber) ?? new Order();
 
-                var result = order.Create(orderNumber);
+                CommandHandlingResult result = order.Create(orderNumber);
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -109,7 +94,7 @@ namespace Store.OrderProcessingService
                     return $"Error: no order with specified order #{orderNumber} exists.";
                 }
 
-                var result = order.OrderProduct(productNumber);
+                CommandHandlingResult result = order.OrderProduct(productNumber);
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -144,7 +129,7 @@ namespace Store.OrderProcessingService
                     return $"Error: no order with specified order #{orderNumber} exists.";
                 }
 
-                var result = order.RemoveProduct(productNumber);
+                CommandHandlingResult result = order.RemoveProduct(productNumber);
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -178,7 +163,7 @@ namespace Store.OrderProcessingService
                     return $"Error: no order with specified order #{orderNumber} exists.";
                 }
 
-                var result = order.Complete(shippingAddress);
+                CommandHandlingResult result = order.Complete(shippingAddress);
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -201,8 +186,7 @@ namespace Store.OrderProcessingService
         {
             try
             {
-                string[] messageParts = messageData.Split('|');
-                string orderNumber = messageParts[0];
+                string orderNumber = messageData;
                 Console.WriteLine($"Ship order #{orderNumber}");
 
                 Order order = _repo.GetByOrderNumber(orderNumber);
@@ -211,7 +195,7 @@ namespace Store.OrderProcessingService
                     return $"Error: no order with specified order #{orderNumber} exists.";
                 }
 
-                var result = order.Ship();
+                CommandHandlingResult result = order.Ship();
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -234,8 +218,7 @@ namespace Store.OrderProcessingService
         {
             try
             {
-                string[] messageParts = messageData.Split('|');
-                string orderNumber = messageParts[0];
+                string orderNumber = messageData;
                 Console.WriteLine($"Cancel order #{orderNumber}");
 
                 Order order = _repo.GetByOrderNumber(orderNumber);
@@ -244,7 +227,7 @@ namespace Store.OrderProcessingService
                     return $"Error: no order with specified order #{orderNumber} exists.";
                 }
 
-                var result = order.Cancel();
+                CommandHandlingResult result = order.Cancel();
                 if (result.Successfull)
                 {
                     _repo.Update(orderNumber, result.BusinessEvent);
@@ -269,5 +252,28 @@ namespace Store.OrderProcessingService
             string eventData = JsonSerializer.Serialize(e, e.GetType());
             _eventsMessageBroker.Publish("store.events", eventType, eventData);
         }
+
+        #region Private helpers
+
+        private static string CallMessageHandler(string messageType, string messageData)
+        {
+            var method = DetermineHandlerMethod(messageType);
+            if (method != null)
+            {
+                return method.Invoke(null, new object[] { messageData }).ToString();
+            }
+            else
+            {
+                return $"Error: Received unknown message-type '{messageType}'.";
+            }
+        }
+
+        private static MethodInfo DetermineHandlerMethod(string messageType)
+        {
+            return typeof(Store.OrderProcessingService.Program)
+                .GetMethod(messageType, BindingFlags.NonPublic | BindingFlags.Static);
+        }       
+
+        #endregion 
     }
 }
