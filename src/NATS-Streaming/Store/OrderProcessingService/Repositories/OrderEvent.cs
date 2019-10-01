@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Store.OrderProcessingService.Repositories
 {
@@ -10,7 +11,8 @@ namespace Store.OrderProcessingService.Repositories
         public DateTime Timestamp { get; set; }
         public string EventType { get; set; } 
         public string EventData { get; set; }
-
+        
+        [ForeignKey("OrderNumber")]
         public OrderAggregate Order { get; set; }
 
         public OrderEvent()

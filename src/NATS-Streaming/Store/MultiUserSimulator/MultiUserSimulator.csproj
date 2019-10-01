@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Messaging\Messaging.csproj" />
-  </ItemGroup>  
+    <PackageReference Include="nats.client" Version="0.9.0" />
+  </ItemGroup>    
 
 </Project>

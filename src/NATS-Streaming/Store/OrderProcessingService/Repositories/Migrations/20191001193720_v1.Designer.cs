@@ -9,7 +9,7 @@ using Store.OrderProcessingService.Repositories;
 namespace OrderProcessingService.Repositories.Migrations
 {
     [DbContext(typeof(EventStoreDBContext))]
-    [Migration("20191001071210_v1")]
+    [Migration("20191001193720_v1")]
     partial class v1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,9 +45,6 @@ namespace OrderProcessingService.Repositories.Migrations
                     b.Property<string>("OrderNumber")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("OrderNumber1")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("TEXT");
 
@@ -56,7 +53,7 @@ namespace OrderProcessingService.Repositories.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderNumber1");
+                    b.HasIndex("OrderNumber");
 
                     b.ToTable("Events");
                 });
@@ -65,7 +62,7 @@ namespace OrderProcessingService.Repositories.Migrations
                 {
                     b.HasOne("Store.OrderProcessingService.Repositories.OrderAggregate", "Order")
                         .WithMany("Events")
-                        .HasForeignKey("OrderNumber1")
+                        .HasForeignKey("OrderNumber")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

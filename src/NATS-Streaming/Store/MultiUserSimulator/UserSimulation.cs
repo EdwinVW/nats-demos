@@ -1,7 +1,8 @@
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Store.Messaging;
+using NATS.Client;
 
 namespace MultiUserSimulator
 {
@@ -9,13 +10,13 @@ namespace MultiUserSimulator
     {
         private readonly int _simulationId;
         private readonly Random _random;
-        private static NATSMessageBroker _messageBroker;
+        private static IConnection _natsConnection;
 
-        public UserSimulation(int simulationId, NATSMessageBroker messageBroker)
+        public UserSimulation(int simulationId, IConnection connection)
         {
             _simulationId = simulationId;
             _random = new Random(DateTime.Now.Millisecond);
-            _messageBroker = messageBroker;
+            _natsConnection = connection;
         }
 
         public Task Start(CancellationToken cancellationToken)
@@ -55,7 +56,8 @@ namespace MultiUserSimulator
 
             string messageType = "CreateOrder";
             string message = $"{orderNumber}";
-            _messageBroker.Publish("store.commands", messageType, message);
+            string subject = $"store.commands.{messageType}";
+            _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
         }
 
         private void OrderProducts(string orderNumber)
@@ -66,7 +68,8 @@ namespace MultiUserSimulator
 
             string messageType = "OrderProduct";
             string message = $"{orderNumber}|{productNumber}";
-            _messageBroker.Publish("store.commands", messageType, message);
+            string subject = $"store.commands.{messageType}";
+            _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
         }
 
         private void RemoveProducts(string orderNumber)
@@ -77,7 +80,8 @@ namespace MultiUserSimulator
 
             string messageType = "RemoveProduct";
             string message = $"{orderNumber}|{productNumber}";
-            _messageBroker.Publish("store.commands", messageType, message);
+            string subject = $"store.commands.{messageType}";
+            _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
         }
 
         private void FinalizeOrder(string orderNumber)
@@ -86,18 +90,19 @@ namespace MultiUserSimulator
             {
                 Console.WriteLine($"Complete order #{orderNumber}");
 
-                string shippingAddress = 
+                string shippingAddress =
                     $"Mainstreet {_random.Next(120, 220)}, {_random.Next(1011, 1019)} AS, Amsterdam";
                 string messageType = "CompleteOrder";
                 string message = $"{orderNumber}|{shippingAddress}";
-                _messageBroker.Publish("store.commands", messageType, message);
+                string subject = $"store.commands.{messageType}";
+                _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
 
                 Console.WriteLine($"Ship order #{orderNumber}");
 
                 messageType = "ShipOrder";
                 message = $"{orderNumber}";
-                _messageBroker.Publish("store.commands", messageType, message);
-
+                subject = $"store.commands.{messageType}";
+                _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
             }
             else
             {
@@ -105,7 +110,8 @@ namespace MultiUserSimulator
 
                 string messageType = "CancelOrder";
                 string message = $"{orderNumber}";
-                _messageBroker.Publish("store.commands", messageType, message);
+                string subject = $"store.commands.{messageType}";
+                _natsConnection.Publish(subject, Encoding.UTF8.GetBytes(message));
             }
         }
 
