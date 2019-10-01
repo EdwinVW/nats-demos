@@ -66,7 +66,6 @@ namespace Store.OrderProcessingService.Repositories
                 await dbContext.SaveChangesAsync();
             }
         }
-
         public void Close()
         {
         }

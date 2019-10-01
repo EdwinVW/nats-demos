@@ -13,16 +13,18 @@ namespace ShippingService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
+                .HasAnnotation("ProductVersion", "3.0.0");
 
             modelBuilder.Entity("Store.ShippingService.Order", b =>
                 {
                     b.Property<string>("OrderNumber")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<bool>("Shipped");
+                    b.Property<bool>("Shipped")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("ShippingAddress");
+                    b.Property<string>("ShippingAddress")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("OrderNumber");
 
@@ -32,11 +34,13 @@ namespace ShippingService.Migrations
             modelBuilder.Entity("Store.ShippingService.OrderedProduct", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("OrderNumber");
+                    b.Property<string>("OrderNumber")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("ProductNumber");
+                    b.Property<string>("ProductNumber")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -48,9 +52,11 @@ namespace ShippingService.Migrations
             modelBuilder.Entity("Store.ShippingService.ShippingInfo", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
 
-                    b.Property<ulong>("LastSeqNr");
+                    b.Property<ulong>("LastSeqNr")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

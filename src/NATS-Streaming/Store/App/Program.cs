@@ -1,5 +1,6 @@
 ﻿using System;
-using Store.Messaging;
+using System.Text;
+using NATS.Client;
 
 namespace Store.App
 {
@@ -7,7 +8,7 @@ namespace Store.App
     {
         private static string VALID_INPUT = "1234567qQ";
         
-        private static NATSMessageBroker _messageBroker;
+        private static IConnection _natsConnection;
 
         private static string[] _products = new string[]
         {
@@ -21,8 +22,10 @@ namespace Store.App
 
         static void Main(string[] args)
         {
-            _messageBroker = new NATSMessageBroker("nats://localhost:4222");
-
+             // connect to NATS
+            var natsConnectionFactory = new ConnectionFactory();
+            _natsConnection = natsConnectionFactory.CreateConnection("nats://localhost:4222");
+            
             bool exit = false;
             while (!exit)
             {
@@ -85,7 +88,7 @@ namespace Store.App
                     Console.ReadKey(true);
                 }
             }
-            _messageBroker.Dispose();
+            _natsConnection.Close();
         }
 
         static void CreateOrder()
@@ -97,7 +100,8 @@ namespace Store.App
 
             string messageType = "CreateOrder";
             string message = $"{orderNumber}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -116,7 +120,8 @@ namespace Store.App
 
             string messageType = "OrderProduct";
             string message = $"{orderNumber}|{productNumber}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -135,7 +140,8 @@ namespace Store.App
 
             string messageType = "RemoveProduct";
             string message = $"{orderNumber}|{productNumber}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -153,7 +159,8 @@ namespace Store.App
 
             string messageType = "CompleteOrder";
             string message = $"{orderNumber}|{shippingAddress}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -169,7 +176,8 @@ namespace Store.App
 
             string messageType = "ShipOrder";
             string message = $"{orderNumber}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -185,7 +193,8 @@ namespace Store.App
 
             string messageType = "CancelOrder";
             string message = $"{orderNumber}";
-            var response = _messageBroker.Request("store.commands", messageType, message, 5000);
+            string subject = $"store.commands.{messageType}";
+            var response = _natsConnection.Request(subject, Encoding.UTF8.GetBytes(message), 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");
@@ -198,7 +207,8 @@ namespace Store.App
             Console.WriteLine("===============");
 
             string messageType = "OrdersOverview";
-            var response = _messageBroker.Request("store.queries", messageType, "", 5000);
+            string subject = $"store.queries.{messageType}";
+            var response = _natsConnection.Request(subject, new byte[0], 5000);
             Console.WriteLine(response);
 
             Console.WriteLine("\nDone. Press any key to return to the main menu.");

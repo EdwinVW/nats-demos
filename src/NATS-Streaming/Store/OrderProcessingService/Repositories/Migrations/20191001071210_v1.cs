@@ -28,23 +28,24 @@ namespace OrderProcessingService.Repositories.Migrations
                     Version = table.Column<int>(nullable: false),
                     Timestamp = table.Column<DateTime>(nullable: false),
                     EventType = table.Column<string>(nullable: true),
-                    EventData = table.Column<string>(nullable: true)
+                    EventData = table.Column<string>(nullable: true),
+                    OrderNumber1 = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_Orders_OrderNumber",
-                        column: x => x.OrderNumber,
+                        name: "FK_Events_Orders_OrderNumber1",
+                        column: x => x.OrderNumber1,
                         principalTable: "Orders",
                         principalColumn: "OrderNumber",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Events_OrderNumber",
+                name: "IX_Events_OrderNumber1",
                 table: "Events",
-                column: "OrderNumber");
+                column: "OrderNumber1");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

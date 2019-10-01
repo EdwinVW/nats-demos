@@ -13,18 +13,21 @@ namespace OrdersQueryService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
+                .HasAnnotation("ProductVersion", "3.0.0");
 
             modelBuilder.Entity("Store.OrdersQueryService.Order", b =>
                 {
                     b.Property<string>("OrderNumber")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("ShippingAddress");
+                    b.Property<string>("ShippingAddress")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("Status");
+                    b.Property<string>("Status")
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal>("TotalPrice");
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("OrderNumber");
 
@@ -34,13 +37,16 @@ namespace OrdersQueryService.Migrations
             modelBuilder.Entity("Store.OrdersQueryService.OrderedProduct", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("OrderNumber");
+                    b.Property<string>("OrderNumber")
+                        .HasColumnType("TEXT");
 
-                    b.Property<decimal>("Price");
+                    b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("ProductNumber");
+                    b.Property<string>("ProductNumber")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

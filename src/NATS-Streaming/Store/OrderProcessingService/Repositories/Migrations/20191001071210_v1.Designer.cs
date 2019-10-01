@@ -9,21 +9,22 @@ using Store.OrderProcessingService.Repositories;
 namespace OrderProcessingService.Repositories.Migrations
 {
     [DbContext(typeof(EventStoreDBContext))]
-    [Migration("20190915064702_v1")]
+    [Migration("20191001071210_v1")]
     partial class v1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
+                .HasAnnotation("ProductVersion", "3.0.0");
 
             modelBuilder.Entity("Store.OrderProcessingService.Repositories.OrderAggregate", b =>
                 {
                     b.Property<string>("OrderNumber")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("CurrentVersion");
+                    b.Property<int>("CurrentVersion")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("OrderNumber");
 
@@ -33,21 +34,29 @@ namespace OrderProcessingService.Repositories.Migrations
             modelBuilder.Entity("Store.OrderProcessingService.Repositories.OrderEvent", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("EventData");
+                    b.Property<string>("EventData")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("EventType");
+                    b.Property<string>("EventType")
+                        .HasColumnType("TEXT");
 
-                    b.Property<string>("OrderNumber");
+                    b.Property<string>("OrderNumber")
+                        .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Timestamp");
+                    b.Property<string>("OrderNumber1")
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("Version");
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderNumber");
+                    b.HasIndex("OrderNumber1");
 
                     b.ToTable("Events");
                 });
@@ -56,7 +65,7 @@ namespace OrderProcessingService.Repositories.Migrations
                 {
                     b.HasOne("Store.OrderProcessingService.Repositories.OrderAggregate", "Order")
                         .WithMany("Events")
-                        .HasForeignKey("OrderNumber")
+                        .HasForeignKey("OrderNumber1")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
