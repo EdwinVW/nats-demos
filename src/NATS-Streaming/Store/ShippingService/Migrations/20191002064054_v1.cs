@@ -24,8 +24,8 @@ namespace ShippingService.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    LastSeqNr = table.Column<ulong>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LastSeqNr = table.Column<decimal>(nullable: false)
                 },
                 constraints: table =>
                 {

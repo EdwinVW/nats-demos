@@ -9,7 +9,7 @@ namespace Store.OrderProcessingService.Repositories
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source=WriteModel.db");
+            optionsBuilder.UseSqlServer("server=localhost,1434;user id=sa;password=8jkGh47hnDw89Haq8LN2;database=Bookstore-WriteModel;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

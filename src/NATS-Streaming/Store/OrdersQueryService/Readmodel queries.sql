@@ -1,4 +1,5 @@
--- SQLite
+use [Bookstore-ReadModel];
+
 SELECT *
 FROM Orders;
 

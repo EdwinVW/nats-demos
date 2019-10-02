@@ -1,4 +1,5 @@
--- SQLite
+use [Bookstore-Shipping];
+
 SELECT *
 FROM Orders;
 

@@ -8,3 +8,5 @@ The repo contains the following demo projects:
 - NATS-Streaming
   - BasicMessaging: basic messaging demo focussed on replaying messages.
   - Store: simple event-based distributed book-store application using NATS and NATS-Streaming.
+
+> The Store demo assumes there is a SQL Server running on your local machine on port 1434. If you want to use a different host or port, change the connection-string in the 3 DBContext classes in the *OrderProcesingService*, *OrdersQueryService* and *ShippingService*. Also change the host and port on the *reset.ps1* script.
