@@ -1,5 +1,5 @@
 # NATS demos
-This repo contains the code for the demos that I use during sessions that I present about NATS and NATS Streaming.
+This repo contains the code for the demos that I use during talks I give about NATS and NATS Streaming.
 
 The slides of the talks I gave about NATS can be found in the [slides folder](slides) in this repo.
 
