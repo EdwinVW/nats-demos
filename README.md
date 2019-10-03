@@ -1,6 +1,7 @@
 # NATS demos
 This repo contains the code for the demos that I use during sessions that I present about NATS and NATS Streaming.
-The code is **NOT production grade** and only for demo purposes and for experimenting with NATS and NATS Streaming.
+
+The slides of the talks I gave about NATS can be found in the [slides folder](slides) in this repo.
 
 The repo contains the following demo projects:
 - NATS
@@ -9,4 +10,12 @@ The repo contains the following demo projects:
   - BasicMessaging: basic messaging demo focussed on replaying messages.
   - Store: simple event-based distributed book-store application using NATS and NATS-Streaming.
 
-> The Store demo assumes there is a SQL Server running on your local machine on port 1434. If you want to use a different host or port, change the connection-string in the 3 DBContext classes in the *OrderProcesingService*, *OrdersQueryService* and *ShippingService*. Also change the host and port on the *reset.ps1* script.
+Within every demo folder I've included some Powershell scripts to start the necessary components. 
+
+
+The demos have some **prerequisites**:
+1. All scripts that start NATS or NATS Streaming assume that the folders where you have installed the NATS and NATS Streaming executables are added to the `PATH` environment variable. If for some reason you don't want that, just change the path to the executable in the `start-nats.ps1`, `start-nats-streaming.ps1` and `start-local-cluster.ps1` scripts.
+2. The store demo assumes there is a SQL Server running on your local machine on port 1434. If you want to use a different host or port, change the connection-string in the 3 DBContext classes in the *OrderProcesingService*, *OrdersQueryService* and *ShippingService*. Also change the host and port in the `reset.ps1` script.
+3. The store demo assumes there's a folder `D:\Temp\NATSDemos\Store`. It uses this as the file-location for the file-system based storage provider for NATS Streaming. If you want to use a different folder, create it and change the folder in the `start-nats.ps1` script and the `reset.ps1` script. 
+
+>Disclaimer: the code is **NOT production grade** and only for demo purposes and for experimenting with NATS and NATS Streaming.

@@ -1,1 +1,1 @@
-Start-Process -FilePath "d:\tools\nats-streaming\nats-streaming-server.exe" -ArgumentList "-p 4223"
+Start-Process -FilePath "nats-streaming-server.exe" -ArgumentList "-p 4223"
