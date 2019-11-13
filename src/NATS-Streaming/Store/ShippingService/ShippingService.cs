@@ -16,7 +16,7 @@ namespace Store.ShippingService
             var cf = new StanConnectionFactory();
             var natsOptions = StanOptions.GetDefaultOptions();
             natsOptions.NatsURL = "nats://localhost:4223";
-            _stanConnection = cf.CreateConnection("test-cluster", "OrdersQueryService", natsOptions);
+            _stanConnection = cf.CreateConnection("test-cluster", "ShippingService", natsOptions);
 
             // create events subscription
             StanSubscriptionOptions stanOptions = StanSubscriptionOptions.GetDefaultOptions();
