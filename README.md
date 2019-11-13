@@ -1,7 +1,7 @@
 # NATS demos
 This repo contains the code for the demos that I use during talks I give about NATS and NATS Streaming.
 
-The slides of the talks I gave about NATS can be found in the [slides folder](slides) in this repo.
+The slides of a talk I gave about NATS can be found [here](https://edwinvw.github.io/presentations/nats.html).
 
 The repo contains the following demo projects:
 - NATS
