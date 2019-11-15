@@ -12,8 +12,8 @@ namespace Store.OrdersQueryService
             service.Start();
 
             Console.WriteLine("OrdersQueryService online.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
+            Console.WriteLine("Press <enter> to exit...");
+            Console.ReadLine();
 
             service.Stop();
         }

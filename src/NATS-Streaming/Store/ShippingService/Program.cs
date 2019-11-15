@@ -12,8 +12,8 @@ namespace Store.ShippingService
             service.Start();
 
             Console.WriteLine("ShippingService online.");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey(true);
+            Console.WriteLine("Press <enter> to exit...");
+            Console.ReadLine();
 
             service.Stop();
         }
