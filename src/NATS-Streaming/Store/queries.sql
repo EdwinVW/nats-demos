@@ -3,7 +3,7 @@
 -----------------------
 USE [Bookstore-WriteModel];
 SELECT * FROM [Orders] ORDER BY [OrderNumber];
-SELECT * FROM [Events] ORDER BY [OrderNumber], Version;
+SELECT * FROM [Events] ORDER BY [OrderNumber], [Version];
 
 -----------------------
 -- Read model queries
