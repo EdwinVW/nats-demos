@@ -289,12 +289,15 @@ namespace Store.OrderProcessingService
         private void PublishBusinessEvent(BusinessEvent e)
         {
             string eventType = e.GetType().Name;
-            
             string eventData = JsonSerializer.Serialize(e, e.GetType());
             
-            string message = $"{eventType}#{eventData}";
+            // create message
+            // Event-type is embedded in the message:
+            //   <event-type>#<value>|<value>|<value>
+            string body = $"{eventType}#{eventData}";
+            byte[] message = Encoding.UTF8.GetBytes(body);
 
-            _stanConnection.Publish("store.events", Encoding.UTF8.GetBytes(message));
+            _stanConnection.Publish("store.events", message);
         }
     }
 }
