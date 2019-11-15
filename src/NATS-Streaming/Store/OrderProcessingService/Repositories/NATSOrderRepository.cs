@@ -8,6 +8,9 @@ using Store.OrderProcessingService.Domain;
 
 namespace Store.OrderProcessingService.Repositories
 {
+    /// <summary>
+    /// Order repository that uses a STAN stream as event-store.
+    /// </summary>
     public class NATSOrderRepository : IOrderRepository
     {
         private Dictionary<string, List<BusinessEvent>> _eventStreams = new Dictionary<string, List<BusinessEvent>>();

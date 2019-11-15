@@ -20,7 +20,7 @@ namespace Store.OrderProcessingService
 
         public void Start()
         {
-            _repo = new SQLiteOrderRepository();
+            _repo = new SQLServerOrderRepository();
 
             // connect to NATS
             var natsConnectionFactory = new ConnectionFactory();
@@ -45,7 +45,8 @@ namespace Store.OrderProcessingService
 
         private void CommandReceived(object sender, MsgHandlerEventArgs args)
         {
-            // get message data and type
+            // get message data and determine message-type
+            // (message-type is embedded in the subject: store.commands.<message-type>)
             string messageData = System.Text.Encoding.UTF8.GetString(args.Message.Data);
             string messageType = args.Message.Subject.Split('.').Last();
 
@@ -53,7 +54,30 @@ namespace Store.OrderProcessingService
             string response;
             try
             {
-                response = CallMessageHandler(messageType, messageData);
+                switch (messageType)
+                {
+                    case "CreateOrder":
+                        response = CreateOrder(messageData);
+                        break;
+                    case "OrderProduct":
+                        response = OrderProduct(messageData);
+                        break;
+                    case "RemoveProduct":
+                        response = RemoveProduct(messageData);
+                        break;
+                    case "CompleteOrder":
+                        response = CompleteOrder(messageData);
+                        break;
+                    case "ShipOrder":
+                        response = ShipOrder(messageData);
+                        break;
+                    case "CancelOrder":
+                        response = CancelOrder(messageData);
+                        break;
+                    default:
+                        response = $"Error: Received unknown message-type '{messageType}'.";
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -63,7 +87,8 @@ namespace Store.OrderProcessingService
             // send reply
             if (args.Message.Reply != null)
             {
-                _natsConnection.Publish(args.Message.Reply, Encoding.UTF8.GetBytes(response));
+                byte[] message = Encoding.UTF8.GetBytes(response);
+                _natsConnection.Publish(args.Message.Reply, message);
             }
         }
 
@@ -128,7 +153,6 @@ namespace Store.OrderProcessingService
 
             return "OK";
         }
-
 
         private string RemoveProduct(string messageData)
         {
@@ -272,23 +296,5 @@ namespace Store.OrderProcessingService
 
             _stanConnection.Publish("store.events", Encoding.UTF8.GetBytes(message));
         }
-
-        #region Private helpers
-
-        private string CallMessageHandler(string messageType, string messageData)
-        {
-            var method = this.GetType().GetMethod(messageType, BindingFlags.Instance | BindingFlags.NonPublic);
-
-            if (method != null)
-            {
-                return method.Invoke(this, new object[] { messageData }).ToString();
-            }
-            else
-            {
-                return $"Error: Received unknown message-type '{messageType}'.";
-            }
-        }
-
-        #endregion         
     }
 }

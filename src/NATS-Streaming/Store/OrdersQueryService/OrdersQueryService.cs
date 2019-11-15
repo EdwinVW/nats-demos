@@ -45,15 +45,17 @@ namespace Store.OrdersQueryService
             try
             {
                 // extract event-type and payload from the message
+                // Event-type is embedded in the message:
+                //   <event-type>#<value>|<value>|<value>
                 string message = Encoding.UTF8.GetString(args.Message.Data);
                 string eventTypeName = message.Split('#').First();
                 string eventData = message.Substring(message.IndexOf('#') + 1);
 
-                // determine event-type
+                // determine event CLR type
                 string fullEventTypeName = $"Store.OrdersQueryService.Events.{eventTypeName}";
                 Type eventType = Type.GetType(fullEventTypeName, true);
 
-                // Handle event
+                // Call event-handler
                 dynamic e = JsonSerializer.Deserialize(eventData, eventType);
                 Handle(e);
             }

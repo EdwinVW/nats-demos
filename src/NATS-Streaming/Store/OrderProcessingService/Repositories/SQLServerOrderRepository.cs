@@ -7,7 +7,10 @@ using Store.OrderProcessingService.Domain;
 
 namespace Store.OrderProcessingService.Repositories
 {
-    public class SQLiteOrderRepository : IOrderRepository
+    /// <summary>
+    /// Order repository that uses SQL Server as event-store.
+    /// </summary>
+    public class SQLServerOrderRepository : IOrderRepository
     {
         public Order GetByOrderNumber(string orderNumber)
         {
