@@ -21,6 +21,8 @@ namespace Store.ShippingService
             // create events subscription
             StanSubscriptionOptions stanOptions = StanSubscriptionOptions.GetDefaultOptions();
             stanOptions.DurableName = "ShippingService";
+
+            // determine where to start reading in the event-stream
             ulong? lastSeqNr = GetLastSequenceNumber();
             if (lastSeqNr != null)
             {
@@ -35,6 +37,7 @@ namespace Store.ShippingService
 
                 Console.WriteLine("Replaying all messages.");
             }
+
             _stanConnection.Subscribe("store.events", stanOptions, EventReceived);
         }
 
@@ -65,11 +68,11 @@ namespace Store.ShippingService
                     }
                 }
 
-                // determine event-type
+                // determine event CLR type
                 string fullEventTypeName = $"Store.ShippingService.Events.{eventTypeName}";
                 Type eventType = Type.GetType(fullEventTypeName, true);
 
-                // Handle event
+                // handle event
                 dynamic e = JsonSerializer.Deserialize(eventData, eventType);
                 Handle(e);
 
