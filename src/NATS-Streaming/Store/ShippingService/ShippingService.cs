@@ -48,6 +48,8 @@ namespace Store.ShippingService
             try
             {
                 // extract event-type and payload from the message
+                // Event-type is embedded in the message:
+                //   <event-type>#<value>|<value>|<value>
                 string message = Encoding.UTF8.GetString(args.Message.Data);
                 string eventTypeName = message.Split('#').First();
                 string eventData = message.Substring(message.IndexOf('#') + 1);
