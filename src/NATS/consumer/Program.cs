@@ -12,7 +12,7 @@ namespace consumer
 
         static void Main(string[] args)
         {
-            using (_connection = ConnectToNatsCluster())
+            using (_connection = ConnectToNats())
             {
                 SubscribePubSub();
                 SubscribeQueueGroups();
@@ -32,26 +32,13 @@ namespace consumer
             }
         }
 
-        private static IConnection ConnectToNatsCluster()
+        private static IConnection ConnectToNats()
         {
             ConnectionFactory factory = new ConnectionFactory();
+
             var options = ConnectionFactory.GetDefaultOptions();
-            options.Servers = new string[] {
-                "nats://localhost:4222",
-                "nats://localhost:4223",
-                "nats://localhost:4224"
-            };
-
-            options.AllowReconnect = true;
-            options.ReconnectWait = 0;
-            options.MaxReconnect = Options.ReconnectForever;
-
-            options.DisconnectedEventHandler +=
-                (sender, args) => Console.WriteLine($"Client disconnected!!");
-
-            options.ReconnectedEventHandler +=
-                (sender, args) => Console.WriteLine($"Client reconnected to {args.Conn.ConnectedUrl}.");
-
+            options.Url = "nats://localhost:4222";
+            
             return factory.CreateConnection(options);
         }
 
