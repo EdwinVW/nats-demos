@@ -15,8 +15,8 @@ namespace consumer
             using (_connection = ConnectToNats())
             {
                 SubscribePubSub();
-                SubscribeQueueGroups();
                 SubscribeRequestResponse();
+                SubscribeQueueGroups();
                 SubscribeWildcards("nats.*.wildcards");
                 SubscribeWildcards("nats.demo.wildcards.*");
                 SubscribeWildcards("nats.demo.wildcards.>");
@@ -59,18 +59,6 @@ namespace consumer
             });
         }
 
-        private static void SubscribeQueueGroups()
-        {
-            EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
-            {
-                string data = Encoding.UTF8.GetString(args.Message.Data);
-                LogMessage(data);
-            };
-
-            IAsyncSubscription s = _connection.SubscribeAsync(
-                "nats.demo.queuegroups", "load-balancing-queue", handler);
-        }
-
         private static void SubscribeRequestResponse()
         {
             EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
@@ -88,6 +76,18 @@ namespace consumer
 
             IAsyncSubscription s = _connection.SubscribeAsync(
                 "nats.demo.requestresponse", "request-response-queue", handler);
+        }
+        
+        private static void SubscribeQueueGroups()
+        {
+            EventHandler<MsgHandlerEventArgs> handler = (sender, args) =>
+            {
+                string data = Encoding.UTF8.GetString(args.Message.Data);
+                LogMessage(data);
+            };
+
+            IAsyncSubscription s = _connection.SubscribeAsync(
+                "nats.demo.queuegroups", "load-balancing-queue", handler);
         }
 
         private static void SubscribeWildcards(string subject)
